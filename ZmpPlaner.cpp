@@ -5,16 +5,21 @@
 #include "ZmpPlaner.h"
 
 
-//std::ofstream ofszmp("/home/grxuser/users/wu/hrp2rtc/zmp.log");
+//std::ofstream ofszmp("/home/wu/src/HRP3.1x/sony_cnoid/zmp.log");
 
 ZmpPlaner::ZmpPlaner()
 {
   Tsup=0.7;
-  Tdbl=0.16;
+  Tdbl=0.1;//for preview
+  //Tdbl=0.03;//test
+
   //Tdbl=0.3;//toe mode
   dt=0.005;
   disfoot=0.19;
-  offsetZMPy=0.01;
+  offsetZMPy=0.01;//usually
+
+  offsetZMPy=0.025;
+
   //offsetZMPx=0.01371;
   offsetZMPx=0.0;
   //offsetZMPx=0.0023;
@@ -73,39 +78,27 @@ void ZmpPlaner::PlanCP(FootType FT, Vector3 *p_ref, Matrix3 *R_ref, vector2 swLe
 {      
   matrix22 swLegRef_R;      //yow only already okla
   swLegRef_R=RfromMatrix3(object_ref_R);
-  //calcSwingLegXYONew(FT, p_ref,R_ref, swLegRef_p, object_ref_R );//to be continue
+  calcSwingLegCP(FT, p_ref,R_ref, swLegRef_p, object_ref_R );//to be continue
 
   vector2 SupLeg_p(MatrixXd::Zero(2,1));
-  vector2 PreSupLeg_p(MatrixXd::Zero(2,1));
-  vector2 nnextFootPlace(MatrixXd::Zero(2,1));
+  //vector2 nnextFootPlace(MatrixXd::Zero(2,1));
 
 
   //////////parameter calculate/////////////////////
   if((FT==FSRFsw)||(FT==RFsw)){
     SupLeg_p=pfromVector3(p_ref[LLEG]);
-    if(FT==RFsw){
-      PreSupLeg_p=pfromVector3(p_ref[RLEG]);
-      matrix22 PreSupLeg_R(RfromMatrix3(R_ref[RLEG]));
-      PreSupLeg_p+= PreSupLeg_R*offsetZMPr;
-    }
     matrix22 SupLeg_R(RfromMatrix3(R_ref[LLEG]));
-    nnextFootPlace= swLegRef_p+swLegRef_R*RLEG2LLEG;
+    //nnextFootPlace= swLegRef_p+swLegRef_R*RLEG2LLEG;
     SupLeg_p+= SupLeg_R*offsetZMPl;
-    nnextFootPlace+=swLegRef_R*offsetZMPl;
+    //nnextFootPlace+=swLegRef_R*offsetZMPl;
     swLegRef_p+= swLegRef_R*offsetZMPr;
   }
   else if((FT==FSLFsw)||(FT==LFsw)){
     SupLeg_p=pfromVector3(p_ref[RLEG]);
-    if(FT==LFsw){
-      PreSupLeg_p=pfromVector3(p_ref[LLEG]);
-      matrix22 PreSupLeg_R(RfromMatrix3(R_ref[LLEG]));
-      PreSupLeg_p+= PreSupLeg_R*offsetZMPl;//debug new
-    }
     matrix22 SupLeg_R(RfromMatrix3(R_ref[RLEG]));
-    nnextFootPlace = swLegRef_p+swLegRef_R*LLEG2RLEG;
+    //nnextFootPlace = swLegRef_p+swLegRef_R*LLEG2RLEG;
     SupLeg_p+= SupLeg_R*offsetZMPr;
-    //presume RLEG_R is same as landing swLeg
-    nnextFootPlace+=swLegRef_R*offsetZMPr;
+    //nnextFootPlace+=swLegRef_R*offsetZMPr;
     swLegRef_p+= swLegRef_R*offsetZMPl;
   }
 
@@ -131,7 +124,6 @@ void ZmpPlaner::PlanCP(FootType FT, Vector3 *p_ref, Matrix3 *R_ref, vector2 swLe
     //for capture point//
     Interplation5(cp, zero, zero, cp, zero, zero,  Tdbl, cp_deque);//
     vector2 cZMP_pre(cZMP);
-
     vector2 cp_cur(cp);
     double b=exp(w*Tsup);
     cZMP= (swLegRef_p- b*cp_cur)/(1-b);
@@ -146,6 +138,22 @@ void ZmpPlaner::PlanCP(FootType FT, Vector3 *p_ref, Matrix3 *R_ref, vector2 swLe
     Interplation5(cZMP, zero, zero, cZMP, zero, zero, Tsup, rfzmp);
 
   }
+}
+
+void ZmpPlaner::getNextCom(Vector3 &cm_ref)
+{
+  vector2 cm_cur, cp_cur, cm_vel, cm_out;
+  cm_cur<<cm_ref(0), cm_ref(1);
+  cp_cur=cp_deque.at(0);
+  cm_vel= w*( cp_cur- cm_cur);
+
+  cm_out=cm_cur + cm_vel*dt;
+  cm_ref[0]=cm_out[0];
+  cm_ref[1]=cm_out[1];
+
+  cp_deque.pop_front();
+
+  //ofszmp<<cp_cur[0]<<" "<<cp_cur[1]<<" "<<cm_out[0]<<" "<<cm_out[1]<<endl;
 }
 
 //////
@@ -270,6 +278,71 @@ void ZmpPlaner::atan2adjust(double &pre, double &cur)
     
   }// if(fabs(pre - cur)>M_PI)
    
+}
+
+
+void ZmpPlaner::calcSwingLegCP(FootType FT, Vector3 *p_ref, Matrix3 *R_ref, vector2 swLegRef_p, Matrix3 object_ref_R)
+{
+  vector2 swLegIni_p=MatrixXd::Zero(2,1);
+
+  int it=0;
+  double zs=0;
+  vector2 zero(MatrixXd::Zero(2,1));
+  Vector3 zerov3(MatrixXd::Zero(3,1));
+  swLegxy.clear();
+  Trajzd.clear();
+  swLeg_R.clear();
+  index.clear();
+
+  //Vector3 rpytemp=rpyFromRot(object_ref_R);
+  //Matrix3 tar_R=rotationZ(rpytemp(2));
+  Matrix3 tar_R=extractYow(object_ref_R);
+  Matrix3 swLeg_cur_R;
+  //nannnnnndatooo!!!!
+  if((FT==FSRFsw)||(FT==RFsw)){
+    swLegIni_p=pfromVector3(p_ref[RLEG]);
+    swLeg_cur_R=R_ref[RLEG];
+  }
+ else if((FT==FSLFsw)||(FT==LFsw)){
+    swLegIni_p=pfromVector3(p_ref[LLEG]);
+    swLeg_cur_R=R_ref[LLEG];
+ }
+
+  Matrix3 Rmid( swLeg_cur_R.transpose() * tar_R);
+  Vector3 omega( omegaFromRot(Rmid));
+  Interplation5(0.0, 0.0, 0.0 , 1.0, 0.0, 0.0, Tsup-2*Tv, index);
+  
+  //swLeg_cur_R*rodrigues(omega, index.at(0))
+  
+  if((FT==FSRFsw)||(FT==FSLFsw)){
+    //foot no move during this span
+  }
+  else if((FT==RFsw)||(FT==LFsw)){
+    //x y
+    Interplation5(swLegIni_p, zero, zero, swLegIni_p, zero, zero, Tdbl+Tv, swLegxy);//
+    Interplation5(swLegIni_p, zero, zero, swLegRef_p, zero, zero, Tsup-2*Tv, swLegxy);//
+    Interplation5(swLegRef_p, zero, zero, swLegRef_p, zero, zero, Tv, swLegxy);//
+    //yow
+    int tem=  (int)((Tdbl+Tv)/dt +NEAR0 );
+    for(int i=0;i<tem;i++)
+      swLeg_R.push_back(swLeg_cur_R);//Tdbl+tv
+    while(!index.empty()){
+      Matrix3 pushin(swLeg_cur_R*rodoriges(omega, index.at(0)));
+      swLeg_R.push_back (pushin);//Tsup-2tv
+      index.pop_front();
+    }
+    Matrix3 temR(swLeg_cur_R*rodoriges(omega, 1));
+
+    tem=  (int)(Tv/dt +NEAR0 );
+    for(int i=0;i<tem;i++)
+      swLeg_R.push_back(temR);//tv
+    
+    //z
+    zs=0.0;
+    Interplation3(zs, 0.0,  zs, 0.0, Tdbl, Trajzd);
+    Interplation3(zs, 0.0,  Zup, 0.0, 0.5*Tsup, Trajzd);
+    Interplation3(Zup, 0.0, zs, 0.0, 0.5*Tsup, Trajzd);
+  }
 }
 
 void ZmpPlaner::calcSwingLegXYONew(FootType FT, Vector3 *p_ref, Matrix3 *R_ref, vector2 swLegRef_p, Matrix3 object_ref_R)
