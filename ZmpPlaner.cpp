@@ -28,6 +28,9 @@ ZmpPlaner::ZmpPlaner()
   Tv=0.08;
   xInit=yInit=0.0;
  
+  //capture point
+  cp<<0.0, 0.0;
+
 
   std::cout<<"zmpplaner "<<std::endl;
   stopOper=1;
@@ -62,6 +65,7 @@ void ZmpPlaner::setInit(double &xIni, double &yIni)
   yInit=yIni;
   //for new
   zmpInit<<xIni , yIni;
+  cp<<xIni, yIni;
 }
 
 //unused
@@ -78,27 +82,21 @@ void ZmpPlaner::PlanCP(FootType FT, Vector3 *p_ref, Matrix3 *R_ref, vector2 swLe
 {      
   matrix22 swLegRef_R;      //yow only already okla
   swLegRef_R=RfromMatrix3(object_ref_R);
-  calcSwingLegCP(FT, p_ref,R_ref, swLegRef_p, object_ref_R );//to be continue
+  calcSwingLegCP(FT, p_ref,R_ref, swLegRef_p, object_ref_R );
 
   vector2 SupLeg_p(MatrixXd::Zero(2,1));
-  //vector2 nnextFootPlace(MatrixXd::Zero(2,1));
-
-
+ 
   //////////parameter calculate/////////////////////
   if((FT==FSRFsw)||(FT==RFsw)){
     SupLeg_p=pfromVector3(p_ref[LLEG]);
     matrix22 SupLeg_R(RfromMatrix3(R_ref[LLEG]));
-    //nnextFootPlace= swLegRef_p+swLegRef_R*RLEG2LLEG;
     SupLeg_p+= SupLeg_R*offsetZMPl;
-    //nnextFootPlace+=swLegRef_R*offsetZMPl;
     swLegRef_p+= swLegRef_R*offsetZMPr;
   }
   else if((FT==FSLFsw)||(FT==LFsw)){
     SupLeg_p=pfromVector3(p_ref[RLEG]);
     matrix22 SupLeg_R(RfromMatrix3(R_ref[RLEG]));
-    //nnextFootPlace = swLegRef_p+swLegRef_R*LLEG2RLEG;
     SupLeg_p+= SupLeg_R*offsetZMPr;
-    //nnextFootPlace+=swLegRef_R*offsetZMPr;
     swLegRef_p+= swLegRef_R*offsetZMPl;
   }
 
@@ -132,7 +130,6 @@ void ZmpPlaner::PlanCP(FootType FT, Vector3 *p_ref, Matrix3 *R_ref, vector2 swLe
       cp_deque.push_back(cp);
     }
 
-    // Interplation5(cp, zero, zero, swLegRef_p, zero, zero,  Tdbl, cp_deque);//
     //for rzmp
     Interplation5(cZMP_pre, zero, zero, cZMP, zero, zero, Tdbl, rfzmp);
     Interplation5(cZMP, zero, zero, cZMP, zero, zero, Tsup, rfzmp);
@@ -140,18 +137,94 @@ void ZmpPlaner::PlanCP(FootType FT, Vector3 *p_ref, Matrix3 *R_ref, vector2 swLe
   }
 }
 
+
+void ZmpPlaner::PlanCPstop(FootType FT, Vector3 *p_ref, Matrix3 *R_ref, vector2 swLegRef_p, Matrix3 object_ref_R, std::deque<vector2> &rfzmp)
+{      
+  matrix22 swLegRef_R;      //yow only already okla
+  swLegRef_R=RfromMatrix3(object_ref_R);
+  //foot no move
+  //calcSwingLegCP(FT, p_ref,R_ref, swLegRef_p, object_ref_R );
+
+  vector2 SupLeg_p(MatrixXd::Zero(2,1));
+ 
+  //////////parameter calculate/////////////////////
+  if((FT==FSRFsw)||(FT==RFsw)){
+    SupLeg_p=pfromVector3(p_ref[LLEG]);
+    matrix22 SupLeg_R(RfromMatrix3(R_ref[LLEG]));
+    SupLeg_p+= SupLeg_R*offsetZMPl;
+    swLegRef_p+= swLegRef_R*offsetZMPr;
+  }
+  else if((FT==FSLFsw)||(FT==LFsw)){
+    SupLeg_p=pfromVector3(p_ref[RLEG]);
+    matrix22 SupLeg_R(RfromMatrix3(R_ref[RLEG]));
+    SupLeg_p+= SupLeg_R*offsetZMPr;
+    swLegRef_p+= swLegRef_R*offsetZMPl;
+  }
+
+  ////////////plan//////////////
+  vector2 zero(MatrixXd::Zero(2,1));
+ 
+  if((FT==RFsw)||(FT==LFsw)){
+    //focus on unity
+    //for capture point//
+    Interplation5(cp, zero, zero, cp, zero, zero,  Tdbl, cp_deque);//
+    vector2 cZMP_pre(cZMP);
+    vector2 cp_cur(cp);
+    double b=exp(w*Tsup);
+    vector2 middle_of_foot;
+    middle_of_foot=(swLegRef_p+ SupLeg_p)/2;
+    cZMP= (middle_of_foot - b*cp_cur)/(1-b);
+    for(int i=1;i<TsupNum+1;i++){
+      cp=cZMP+ exp( w*i*dt )*(cp_cur - cZMP);
+      cp_deque.push_back(cp);
+    }
+
+    //for rzmp
+    Interplation5(cZMP_pre, zero, zero, cZMP, zero, zero, Tdbl, rfzmp);
+    Interplation5(cZMP, zero, zero, middle_of_foot, zero, zero, Tsup, rfzmp);
+    
+
+    /*
+    //quick version
+    //for capture point//
+    vector2 cZMP_pre(cZMP);
+    vector2 cp_cur(cp);
+    double b=exp(w*Tsup);
+    vector2 middle_of_foot;
+    middle_of_foot=(swLegRef_p+ SupLeg_p)/2;
+    cZMP= (middle_of_foot - b*cp_cur)/(1-b);
+    Interplation5(cp, zero, zero, middle_of_foot, zero, zero,  Tdbl, cp_deque);//
+    Interplation5(middle_of_foot, zero, zero, middle_of_foot, zero, zero,  Tsup, cp_deque);
+
+    //for rzmp
+    Interplation5(cZMP, zero, zero, cZMP, zero, zero, Tdbl, rfzmp);
+    Interplation5(cZMP, zero, zero, middle_of_foot, zero, zero, Tsup, rfzmp);
+    */
+  }
+}
+
 void ZmpPlaner::getNextCom(Vector3 &cm_ref)
 {
+  //if(cp_deque.empty())
+  //  return;
+    
   vector2 cm_cur, cp_cur, cm_vel, cm_out;
   cm_cur<<cm_ref(0), cm_ref(1);
-  cp_cur=cp_deque.at(0);
+
+  if(!cp_deque.empty()){
+    cp_cur=cp_deque.at(0);
+    cp_deque.pop_front();
+  }
+  else{ 
+    cp_cur=cp;
+  }
   cm_vel= w*( cp_cur- cm_cur);
 
   cm_out=cm_cur + cm_vel*dt;
   cm_ref[0]=cm_out[0];
   cm_ref[1]=cm_out[1];
 
-  cp_deque.pop_front();
+ 
 
   //ofszmp<<cp_cur[0]<<" "<<cp_cur[1]<<" "<<cm_out[0]<<" "<<cm_out[1]<<endl;
 }
