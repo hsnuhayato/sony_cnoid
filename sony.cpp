@@ -28,6 +28,8 @@ static const char* sony_spec[] =
 
 sony::sony(RTC::Manager* manager):
   hrp2Base(manager),
+  m_axesIn("axes", m_axes),
+  m_buttonsIn("buttons", m_buttons),
   m_sonyServicePort("sonyService")
 
     // </rtc-template>
@@ -45,7 +47,11 @@ RTC::ReturnCode_t sony::onInitialize()
   // Registration: InPort/OutPort/Service
   // <rtc-template block="registration">
   // Set InPort buffers
- 
+  addInPort("axes", m_axesIn);
+  addInPort("buttons", m_buttonsIn);
+  //for ps3 controll
+  m_axes.data.length(8);
+  m_buttons.data.length(11);
   // Set OutPort buffer
 
   // Set service provider to Ports
@@ -97,6 +103,24 @@ RTC::ReturnCode_t sony::onExecute(RTC::UniqueId ec_id)
 
   //read inport
   hrp2Base::updates();
+
+  //gamepad
+  if(m_axesIn.isNew()){
+    m_axesIn.read();
+
+    velobj(0)=m_axes.data[1]*-5;
+    velobj(1)=m_axes.data[0]*-5;
+    velobj(5)=m_axes.data[2]*-3;
+    
+  }
+
+  if(m_buttonsIn.isNew()){
+    m_buttonsIn.read();
+    //cout<<"buttom is new"<<endl;
+    if(m_buttons.data[1]==1)//maru button
+      step=!step;
+  }
+
    //_/_/_/_/_/_/_/_/_/_/_/_/main algorithm_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
   if(playflag){
     object_operate();   
@@ -334,15 +358,11 @@ void sony::prm2Planzmp(FootType FT, Vector3 *p_ref, Matrix3 *R_ref, Vector3 RLEG
   
   rfzmp.clear();
   
-  
-  //if(!stopflag)
- 
-    if(CommandIn==5)
+  if(CommandIn==5)
     zmpP->PlanCPstop(FT, p_ref, R_ref, swLegRef_p, LEG_ref_R, rfzmp);
   else 
     zmpP->PlanCP(FT, p_ref, R_ref, swLegRef_p, LEG_ref_R, rfzmp);
   
-
  
   //zmpP->PlanZMPnew(FT, p_ref, R_ref, swLegRef_p, LEG_ref_R, rfzmp);///plan rzmp&swingLeg traje
   //toe mode
