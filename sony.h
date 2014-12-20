@@ -107,12 +107,13 @@ class sony  : public hrp2Base
 
  protected:
 
-  // DataOutPort declaration
+  // DataInPort declaration
   RTC::TimedFloatSeq m_axes;
   RTC::InPort<RTC::TimedFloatSeq> m_axesIn;
   RTC::TimedBooleanSeq m_buttons;
   RTC::InPort<RTC::TimedBooleanSeq> m_buttonsIn;
- 
+  // DataOutPort declaration
+
 
   // CORBA Port declaration
   // <rtc-template block="corbaport_declare">

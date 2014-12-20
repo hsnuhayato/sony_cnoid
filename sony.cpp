@@ -89,6 +89,16 @@ RTC::ReturnCode_t sony::onInitialize()
   pt_L= new Link();
   pt_R= new Link();
 
+  //base
+  m_basePos.data.x=m_robot->rootLink()->p()(0);
+  m_basePos.data.y=m_robot->rootLink()->p()(1);
+  m_basePos.data.z=m_robot->rootLink()->p()(2);
+  m_baseRpy.data.r=0.0;
+  m_baseRpy.data.p=0.0;
+  m_baseRpy.data.y=0.0;
+  
+  //Link* TLink=forceSensors[0]->link();
+  //Link* TLink=m_robot->link("LLEG_JOINT5");
   return RTC::RTC_OK;
 }
 
@@ -108,17 +118,26 @@ RTC::ReturnCode_t sony::onExecute(RTC::UniqueId ec_id)
   if(m_axesIn.isNew()){
     m_axesIn.read();
 
-    velobj(0)=m_axes.data[1]*-5;
-    velobj(1)=m_axes.data[0]*-5;
+    velobj(0)=m_axes.data[1]*-6;
+    velobj(1)=m_axes.data[0]*-6;
     velobj(5)=m_axes.data[2]*-3;
-    
+    /*
+    double velsqr=pow(velobj(0),2) + pow(velobj(1),2);
+    if( velsqr > 64){
+      velobj(0)= velobj(0)* 8/ sqrt(velsqr);
+      velobj(1)= velobj(1)* 8/ sqrt(velsqr);    
+      }
+    */
   }
-
+  
   if(m_buttonsIn.isNew()){
     m_buttonsIn.read();
     //cout<<"buttom is new"<<endl;
-    if(m_buttons.data[1]==1)//maru button
-      step=!step;
+  
+    if(m_buttons.data[1]==1)//o button
+      step=1;
+    else if(m_buttons.data[0]==1)//x burron
+      step=0;
   }
 
    //_/_/_/_/_/_/_/_/_/_/_/_/main algorithm_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
@@ -139,9 +158,21 @@ RTC::ReturnCode_t sony::onExecute(RTC::UniqueId ec_id)
     }    
     */
 
-    calcWholeIVK(); //write
+    calcWholeIVK(); //write in refq
     zmpHandler();
+
+    //base
+    m_basePos.data.x=m_robot->rootLink()->p()(0);
+    m_basePos.data.y=m_robot->rootLink()->p()(1);
+    m_basePos.data.z=m_robot->rootLink()->p()(2);
+    Vector3 rpy=R_ref[WAIST].eulerAngles(2, 1, 0);
+    //m_baseRpy.data.r=rpy(2);
+    //m_baseRpy.data.p=rpy(1);
+    m_baseRpy.data.r=0.0;
+    m_baseRpy.data.p=0.0;
+    m_baseRpy.data.y=rpy(0);
     
+
     //for next step
     if(ChangeSupLeg(m_robot, FT, count, zmpP, PC, stopflag, CommandIn, p_ref, p_Init, R_ref, R_Init))
       flagcalczmp=1;
@@ -149,7 +180,9 @@ RTC::ReturnCode_t sony::onExecute(RTC::UniqueId ec_id)
     
     //////////////write///////////////
     rzmp2st();
-    
+    m_contactStatesOut.write();
+    m_basePosOut.write();
+    m_baseRpyOut.write();
   }//playflag
 
   //_/_/_/_/_/_/_/_/_test/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/  
@@ -172,9 +205,11 @@ RTC::ReturnCode_t sony::onExecute(RTC::UniqueId ec_id)
 inline void sony::rzmp2st()
 {
   relZMP = R_ref[WAIST].transpose()*(absZMP - m_robot->link("WAIST")->p());
-  for(int i=0;i< m_rzmp.data.length();i++){
-    m_rzmp.data[i]=relZMP[i];    
-  }
+  //for(int i=0;i< m_rzmp.data.length();i++)
+  //  m_rzmp.data[i]=relZMP[i];    
+  m_rzmp.data.x=relZMP[0];
+  m_rzmp.data.y=relZMP[1];     
+  m_rzmp.data.z=relZMP[2];
   m_rzmpOut.write();
 }
 
@@ -236,6 +271,7 @@ inline void sony::object_operate()
 inline void sony::calcRefLeg()
 {
   Matrix3 Rtem_Q=extractYow(object_ref->R());
+
   //actually in x-y plan only
   RLEG_ref_p = object_ref->p() + Rtem_Q * p_obj2RLEG; 
   LLEG_ref_p = object_ref->p() + Rtem_Q * p_obj2LLEG;
@@ -383,9 +419,17 @@ void sony::walkingMotion(BodyPtr m_robot, FootType FT, Vector3 &cm_ref, Vector3 
     R_ref[swingLeg]= zmpP->swLeg_R.at(0);
     zmpP->calcWaistR(FT,  R_ref); 
 
+
+    //contact states
+    if(zmpP->Trajzd.at(0)<1e-9)
+      m_contactStates.data[swingLeg]=1;
+    else 
+      m_contactStates.data[swingLeg]=0;
+
+
     zmpP->swLegxy.pop_front();
     zmpP->Trajzd.pop_front();
-    zmpP->swLeg_R.pop_front();
+    zmpP->swLeg_R.pop_front();    
   }
 
   /*
@@ -582,11 +626,12 @@ void sony::start()
   //////////////////////////////////////////////////////////////
 
   rotRTemp=object_ref->R();
-  cerr<<"startQ"<<endl;
+  cout<<"startQ "<<cm_ref(2)<<endl;
   
 
   double w=sqrt(9.806/cm_ref(2));
   zmpP->setw(w);
+
   //ooo
   playflag=1;
   

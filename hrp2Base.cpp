@@ -36,6 +36,9 @@ hrp2Base::hrp2Base(RTC::Manager* manager)
     m_lfsensorIn("lfsensor", m_lfsensor),
     m_mcIn("mc", m_mc),
     m_rzmpOut("rzmp", m_rzmp),
+    m_contactStatesOut("contactStates", m_contactStates),
+    m_basePosOut("basePosOut", m_basePos),
+    m_baseRpyOut("baseRpyOut", m_baseRpy),
     m_refqOut("refq", m_refq)
     //m_hrp2BaseServicePort("hrp2BaseService")
     // </rtc-template>
@@ -62,6 +65,9 @@ RTC::ReturnCode_t hrp2Base::onInitialize()
   // Set OutPort buffer
   addOutPort("rzmp", m_rzmpOut);
   addOutPort("refq", m_refqOut);
+  addOutPort("basePosIn", m_basePosOut);
+  addOutPort("baseRpyIn", m_baseRpyOut);
+  addOutPort("contactStates", m_contactStatesOut);
 
   // Set service provider to Ports
   //m_hrp2BaseServicePort.registerProvider("service0", "hrp2BaseService", m_service0);
@@ -101,9 +107,14 @@ RTC::ReturnCode_t hrp2Base::onInitialize()
   m_robot=bl.load( prop["model"].c_str());
   std::cout<<"sony dof robot "<<m_robot->numJoints()<<std::endl;
   m_robot->rootLink()->p()<<0.0, 0.0, 0.705;
+  //m_robot->rootLink()->p()(0)=0.0;
+  //m_robot->rootLink()->p()=Vector3(0, 0 ,0);
   //std::cout<<"R "<<m_robot->rootLink()->name()<<std::endl;
   m_robot->calcForwardKinematics();
   m_robot->calcCenterOfMass();
+  //std::cout<<"sony robot mass "<<m_robot->mass()<<" "<<m_robot->link("RLEG_JOINT5")->p()<<endl;
+
+  mass=m_robot->mass();
 
   dof = m_robot->numJoints();
   if( m_robot->numJoints()==32){
@@ -129,23 +140,44 @@ RTC::ReturnCode_t hrp2Base::onInitialize()
   //fsensorRLEG = m_robot->sensor<cnoid::ForceSensor>(0);
   //fsensorLLEG = m_robot->sensor<cnoid::ForceSensor>(1);
   forceSensors = m_robot->devices();
+  AccelSensors = m_robot->devices();
+  RateGyroSensors= m_robot->devices();
   //cout<<"forcesener localp "<<'\n'<<forceSensors[0]->p_local()<<endl;
   //cout<<"forcesener localR "<<'\n'<<forceSensors[0]->R_local()<<endl;
-  cout<<"name "<<forceSensors[0]->name()<<endl;
-  cout<<"name "<<forceSensors[1]->name()<<endl;
+  //for(int i=0;i< (m_robot->numDevices());i++)
+  cout<<"device num "<<m_robot->numDevices()<<endl;
+  //cout<<"name "<<forceSensors[0]->name()<<endl;
+  //cout<<"name "<<forceSensors[1]->name()<<endl;
+  cout<<"name "<<AccelSensors[0]->name()<<endl;
+  //Link* TLink=forceSensors[0]->link();
+  //Link* TLink=m_robot->link("LLEG_JOINT5");
+  RateGyroSensor* sen=RateGyroSensors[0];
+  cout<<"GG "<<sen->link()->name()<<endl;
+
+  Isometry3 local;
+  local.linear()=AccelSensors[0]->R_local();
+  local.translation()=AccelSensors[0]->p_local();
+  //cout<<  local.translation()<<'\n'<<  local.linear()<<endl;
   //cout<<"forcesener f "<<'\n'<<forceSensors[0]->f()<<endl;
   //cout<<"forcesener tau "<<'\n'<<forceSensors[0]->tau()<<endl;
+  //Matrix3 testR= forceSensors[0]->link()->R()* forceSensors[0]->R_local();
+  ForceSensor* sensor=forceSensors[0];
+  Matrix3 testR=sensor->link()->R()* sensor->R_local();
+  cout<<"test R"<<'\n'<<testR<<endl;
+  cout<<sensor->link()->name()<<endl;
 
-  //data port
+
+    //data port
   m_q.data.length(dof);
   m_mc.data.length(dof);
   m_rhsensor.data.length(6);
   m_lhsensor.data.length(6);
   m_rfsensor.data.length(6);
   m_lfsensor.data.length(6);  
-  m_rzmp.data.length(3); 
+  //m_rzmp.data.length(3); 
   m_refq.data.length(dof);
-    
+  m_contactStates.data.length(2);
+  m_contactStates.data[0]=m_contactStates.data[1]=1;
   
   return RTC::RTC_OK;
 }

@@ -8,6 +8,7 @@
 #define HRP2BASE_H
 
 #include <rtm/idl/BasicDataTypeSkel.h>
+#include <rtm/idl/ExtendedDataTypesSkel.h>
 #include <rtm/Manager.h>
 #include <rtm/DataFlowComponentBase.h>
 #include <rtm/CorbaPort.h>
@@ -123,11 +124,19 @@ class hrp2Base  : public RTC::DataFlowComponentBase
 
   // DataOutPort declaration
   // <rtc-template block="outport_declare">
-  TimedDoubleSeq m_rzmp;
-  OutPort<TimedDoubleSeq> m_rzmpOut;
+  //old
+  //TimedDoubleSeq m_rzmp;
+  //OutPort<TimedDoubleSeq> m_rzmpOut;
+  TimedPoint3D m_rzmp;
+  OutPort<TimedPoint3D> m_rzmpOut;
   TimedDoubleSeq m_refq;
   OutPort<TimedDoubleSeq> m_refqOut;
-
+  TimedBooleanSeq m_contactStates;
+  OutPort<TimedBooleanSeq> m_contactStatesOut;
+  TimedPoint3D m_basePos;
+  OutPort<TimedPoint3D> m_basePosOut;
+  TimedOrientation3D m_baseRpy;
+  OutPort<TimedOrientation3D> m_baseRpyOut;
   // </rtc-template>
 
   // CORBA Port declaration
@@ -151,6 +160,7 @@ class hrp2Base  : public RTC::DataFlowComponentBase
   Properties prop;
   BodyPtr m_robot;
   int dof;
+  double mass;
   int armDof;
   Vector3 absZMP,relZMP;
   Vector3 cm_ref;
@@ -170,6 +180,8 @@ class hrp2Base  : public RTC::DataFlowComponentBase
   //ForceSensor * fsensorRLEG;
   //ForceSensor * fsensorLLEG;
   DeviceList<ForceSensor> forceSensors;
+  DeviceList<AccelSensor> AccelSensors;
+  DeviceList<RateGyroSensor> RateGyroSensors;
   void updates();
 
  private:

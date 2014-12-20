@@ -429,8 +429,11 @@ matrix22 RfromMatrix3(Matrix3 Rin)//bimyou
 
 Matrix3 extractYow(Matrix3 Rin)
 {
-  Vector3 rpy=rpyFromRot(Rin);
-  Matrix3 R=rotationZ(rpy(2));
+  //Vector3 rpy=rpyFromRot(Rin);
+  //Matrix3 R=rotationZ(rpy(2));
+
+  Vector3 euler = Rin.eulerAngles(2,1,0);
+  Matrix3 R=rotationZ(euler(0));
 
   return R;
 }

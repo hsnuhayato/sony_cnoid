@@ -114,6 +114,12 @@ pnl.add(obj)
 obj = createButton("start", start)
 pnl.add(obj)
 
+obj = createButton("stOn", stOn)
+pnl.add(obj)
+
+obj = createButton("stStop", stOff)
+pnl.add(obj)
+
 obj = createButton("stepping", stepping)
 pnl.add(obj)
 

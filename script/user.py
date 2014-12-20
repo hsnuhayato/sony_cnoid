@@ -1,4 +1,3 @@
-#!/opt/grx/bin/hrpsyspy
 import os
 
 import sys
@@ -118,14 +117,23 @@ def stOff():
     print "no comment"   
 
 def createComps(hostname=socket.gethostname()):
-    global ms, user, user_svc, log, rh, servo, joystick
+    global ms, user, user_svc, log, rh, servo, joystick, kf, st, st_svc
     ms = rtm.findRTCmanager(hostname)
     rh = rtm.findRTC("HRP2A")
+    if ms==None:
+        print "no ms"
+    else:
+        user = initRTC("sony", "wpg")
+        joystick= initRTC("GamepadRTC","joystick")
+        kf= initRTC("KalmanFilter","kf")
+        st= initRTC("Stabilizer","st")
     #log = initRTC("DataLogger", "log")
-    user = rtm.findRTC("sony0")
+   
     servo= rtm.findRTC("JojoPDservo0")
 
-    joystick= rtm.findRTC("GamepadRTC0")
+    #user = rtm.findRTC("sony0")
+    #joystick= rtm.findRTC("GamepadRTC0")
+    #kf=rtm.findRTC("KalmanFilter0")
 
     if servo==None:
         print "no servo component"
@@ -138,19 +146,20 @@ def createComps(hostname=socket.gethostname()):
     if user==None:
         print "no user component"
         return
+
     user_svc = OpenHRP.sonyServiceHelper.narrow(user.service("service0"))
-   
     if user_svc==None:
         print "no svc"
 
+    st_svc = OpenHRP.StabilizerServiceHelper.narrow(st.service("service0"))
+    if st_svc==None:
+        print "no st svc"
 
     if joystick==None:
         print "no joystick component"
 
-    if joystick!=None:
-        rtcs=[rh, joystick, user]
-    else:
-        rtcs=[rh, user]
+    rtcs=[rh, joystick, kf, user, st]
+    
 
     #user.start()
     #joystick.start()
@@ -159,8 +168,8 @@ def createComps(hostname=socket.gethostname()):
     return rtcs
 
 def connectComps():
-    rtm.connectPorts(user.port("refq"),    servo.port("qRefIn"))
-    rtm.connectPorts(user.port("refq"),    user.port("mc"))#tempepory
+    #rtm.connectPorts(user.port("refq"),    servo.port("qRefIn"))
+    #rtm.connectPorts(user.port("refq"),    user.port("mc"))#tempepory
     #rtm.connectPorts(rh.port("q"),    user.port("mc"))#tempepory
     rtm.connectPorts(rh.port("rfsensor"), user.port("rfsensor"))
     rtm.connectPorts(rh.port("lfsensor"), user.port("lfsensor"))
@@ -171,7 +180,23 @@ def connectComps():
         print "connect to gamepad"
         rtm.connectPorts(joystick.port("axes"),user.port("axes"))
         rtm.connectPorts(joystick.port("buttons"),user.port("buttons"))
-    
+
+    if kf != None:
+        rtm.connectPorts(rh.port("gsensor"),  kf.port("acc"))
+        rtm.connectPorts(rh.port("gyrometer"),  kf.port("rate"))
+        
+    if st!= None:
+        rtm.connectPorts(kf.port("rpy"), st.port("rpy"))
+        rtm.connectPorts(rh.port("rfsensor"), st.port("forceR"))
+        rtm.connectPorts(rh.port("lfsensor"), st.port("forceL"))
+        rtm.connectPorts(rh.port("q"), st.port("qCurrent"))
+        rtm.connectPorts(user.port("refq"), st.port("qRef"))
+        rtm.connectPorts(user.port("rzmp"), st.port("zmpRef"))
+        rtm.connectPorts(user.port("basePosOut"), st.port("basePosIn"))
+        rtm.connectPorts(user.port("baseRpyOut"), st.port("baseRpyIn"))
+        rtm.connectPorts(user.port("contactStates"), st.port("contactStates"))
+        rtm.connectPorts(st.port("q"),  servo.port("qRefIn"))
+        rtm.connectPorts(st.port("q"),    user.port("mc"))
 """    
 def connectComps():
     rtm.connectPorts(rh.port("q"), [sh.port("currentQIn"),
@@ -531,12 +556,17 @@ def userTest():
 
 def start():
     user_svc.start()
-    #st_svc.startStabilizer()
+  
+def stOn():
+    st_svc.startStabilizer()
+
+def stOff():
+    st_svc.stopStabilizer()
 
 def setObjectV(x):
     itemlist = x.split() #import numpy 
     numbers = [ float(item) for item in itemlist ]
-    print "wa= ",numbers[0]+numbers[2]
+    #print "wa= ",numbers[0]+numbers[2]
     user_svc.setObjectV(numbers[0], numbers[1], numbers[2], numbers[3], numbers[4], numbers[5])
 
 def testMove():

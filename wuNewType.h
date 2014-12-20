@@ -22,6 +22,7 @@
 #include <cnoid/Jacobian>
 #include <cnoid/EigenUtil>
 #include <cnoid/Sensor>
+#include <cnoid/Link>
 using std::cout; using std::endl;
 using std::cerr;
 using namespace std;
