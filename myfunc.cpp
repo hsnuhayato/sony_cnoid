@@ -124,7 +124,7 @@ void getModelPosture( BodyPtr body,  TimedDoubleSeq &m_refq)
 //old
 
 //new
-void setModelPosture( BodyPtr body,  TimedDoubleSeq &m_q, FootType FT, Vector3  *p_Init, Matrix3 *R_Init)
+void setModelPosture( BodyPtr body,  TimedDoubleSeq &m_q, FootType FT)
 {
   int dof=body->numJoints();
   for(unsigned int i=0;i<dof;i++)
@@ -134,13 +134,13 @@ void setModelPosture( BodyPtr body,  TimedDoubleSeq &m_q, FootType FT, Vector3  
   JointPathPtr Rf2Lf= getCustomJointPath(body, body->link("RLEG_JOINT5"),body->link("LLEG_JOINT5"));
   
   if((FT==FSRFsw)||FT==RFsw){
-    body->link("LLEG_JOINT5")->p()=p_Init[LLEG];
-    body->link("LLEG_JOINT5")->R()=R_Init[LLEG];//tvmet::identity<matrix33>();
+    //body->link("LLEG_JOINT5")->p()=p_Init[LLEG];
+    //body->link("LLEG_JOINT5")->R()=R_Init[LLEG];//tvmet::identity<matrix33>();
     Lf2Rf->calcForwardKinematics();
   }
   else if((FT==FSLFsw)||FT==LFsw){
-    body->link("RLEG_JOINT5")->p()=p_Init[RLEG];
-    body->link("RLEG_JOINT5")->R()=R_Init[RLEG];//tvmet::identity<matrix33>();
+    //body->link("RLEG_JOINT5")->p()=p_Init[RLEG];
+    //body->link("RLEG_JOINT5")->R()=R_Init[RLEG];//tvmet::identity<matrix33>();
     Rf2Lf->calcForwardKinematics();
   }
   body->calcForwardKinematics();
@@ -154,6 +154,16 @@ Matrix3 rotationZ(double theta){
   R <<  c,  -s,  0.0,
     s,   c,  0.0,
     0.0, 0.0, 1.0;
+  return R;
+}
+
+Matrix3 rotationY(double theta){
+  Matrix3 R;
+  double c = cos(theta);
+  double s = sin(theta);
+  R << c,   0.0,  s,
+    0.0, 1.0, 0.0,
+    -s,  0.0,  c ;
   return R;
 }
 
@@ -498,7 +508,7 @@ void updateInit(Vector3 *p_now, Vector3 *p_Init, Matrix3 *R_now, Matrix3 *R_Init
    }
 }
 
-bool walkJudge(BodyPtr body, Vector3 *p_ref, Matrix3 *R_ref, FootType FT, Vector3 RLEG_ref_p, Vector3 LLEG_ref_p, Matrix3  LEG_ref_R)
+bool walkJudge(BodyPtr body,  FootType FT, Vector3 RLEG_ref_p, Vector3 LLEG_ref_p, Matrix3  LEG_ref_R)
 {
   Vector3 FErr_R(VectorXd::Zero(3));
   Vector3 FErr_L(VectorXd::Zero(3));
@@ -565,14 +575,14 @@ void atan2adjust(Vector3 &pre, Vector3 &cur)
 }
 
 
-bool CalcIVK_biped(BodyPtr body, Vector3& CM_p, Vector3 *p_ref, Matrix3 *R_ref, FootType FT, Vector3  *p_Init, Matrix3 *R_Init)
+bool CalcIVK_biped(BodyPtr body, Vector3& CM_p, Vector3 *p_ref, Matrix3 *R_ref, FootType FT)
 {
   Link* SupLeg;
   Link* SwLeg;
   JointPathPtr SupLeg2SwLeg,SupLeg2W;
   Vector3 cm=body->calcCenterOfMass();
   Vector3  SwLeg_p; 
-  Matrix3 W_R,SwLeg_R;  
+  Matrix3 W_R,SwLeg_R; 
  
   Eigen::ColPivHouseholderQR<MatrixXd> QR;
   //careful
@@ -591,6 +601,12 @@ bool CalcIVK_biped(BodyPtr body, Vector3& CM_p, Vector3 *p_ref, Matrix3 *R_ref, 
   }
   SupLeg2SwLeg= getCustomJointPath(body, SupLeg, SwLeg);  
   SupLeg2W= getCustomJointPath(body, SupLeg,body->link("WAIST"));   
+
+  //new
+  Vector3 SupLeg_p_Init;
+  Matrix3 SupLeg_R_Init; 
+  SupLeg_p_Init=SupLeg->p();
+  SupLeg_R_Init=SupLeg->R();
   
   static const int MAX_IK_ITERATION = 50;
   static const double LAMBDA = 0.9;
@@ -639,15 +655,6 @@ bool CalcIVK_biped(BodyPtr body, Vector3& CM_p, Vector3 *p_ref, Matrix3 *R_ref, 
 	break;
       }
       
-      /*
-      //solveLinearEquationSVD(Jacobian, v, dq);  // dq = pseudoInverse(J) * v
-      //if(solveLinearEquationSVD(Jacobian, v, dq)!=0){
-      if(solveLinearEquationLU(Jacobian, v, dq)!=0){
-	std::cerr<<"SVD out"<<std::endl;
-	converged=0;
-	break;
-      }
-      */
       MatrixXd JJ;
       double dampingConstantSqr=1e-12;
       JJ = Jacobian *  Jacobian.transpose() + dampingConstantSqr * MatrixXd::Identity(Jacobian.rows(), Jacobian.rows());
@@ -658,7 +665,7 @@ bool CalcIVK_biped(BodyPtr body, Vector3& CM_p, Vector3 *p_ref, Matrix3 *R_ref, 
 	body->joint(j)->q() += LAMBDA * dq(j);
       }
      
-      //A
+      /*
       if((FT==FSRFsw)||FT==RFsw){
 	body->link("LLEG_JOINT5")->p()=p_Init[LLEG];
 	body->link("LLEG_JOINT5")->R()=R_Init[LLEG];
@@ -667,6 +674,10 @@ bool CalcIVK_biped(BodyPtr body, Vector3& CM_p, Vector3 *p_ref, Matrix3 *R_ref, 
 	body->link("RLEG_JOINT5")->p()=p_Init[RLEG];
 	body->link("RLEG_JOINT5")->R()=R_Init[RLEG];
       }
+      */
+
+      SupLeg->p()=SupLeg_p_Init;
+      SupLeg->R()=SupLeg_R_Init;
       SupLeg2SwLeg->calcForwardKinematics();
       body->calcForwardKinematics();
       
@@ -677,9 +688,8 @@ bool CalcIVK_biped(BodyPtr body, Vector3& CM_p, Vector3 *p_ref, Matrix3 *R_ref, 
       for(int j=0; j < n; ++j){
 	body->joint(j)->q() = qorg[j];
       }
-    
-      //A
-      if((FT==FSRFsw)||FT==RFsw){
+      /*
+	if((FT==FSRFsw)||FT==RFsw){
 	body->link("LLEG_JOINT5")->p()=p_Init[LLEG];
 	body->link("LLEG_JOINT5")->R()=R_Init[LLEG];//tvmet::identity<matrix33>();
       }
@@ -687,7 +697,9 @@ bool CalcIVK_biped(BodyPtr body, Vector3& CM_p, Vector3 *p_ref, Matrix3 *R_ref, 
 	body->link("RLEG_JOINT5")->p()=p_Init[RLEG];
 	body->link("RLEG_JOINT5")->R()=R_Init[RLEG];//tvmet::identity<matrix33>();
       }
-      
+      */
+      SupLeg->p()=SupLeg_p_Init;
+      SupLeg->R()=SupLeg_R_Init;
       SupLeg2SwLeg->calcForwardKinematics();
       body->calcForwardKinematics();
     }
@@ -973,3 +985,170 @@ Eigen::Quaternion<double> q = rollAngle * yawAngle * pitchAngle;
 
 Eigen::Matrix3d rotationMatrix = q.matrix();
  */
+
+
+bool CalcIVK_biped_toe(BodyPtr body, Vector3& CM_p, Vector3 *p_ref, Matrix3 *R_ref, FootType FT)
+{
+  Link* SupLeg;
+  Link* SwLeg;
+  JointPathPtr SupLeg2SwLeg,SupLeg2W;
+  Vector3 cm=body->calcCenterOfMass();
+  Vector3  SwLeg_p; 
+  Matrix3 W_R,SwLeg_R; 
+ 
+  Eigen::ColPivHouseholderQR<MatrixXd> QR;
+  //careful
+  MatrixXd Jacobian=MatrixXd::Zero(12,12);//leg only
+  int swingLegId;
+
+  if((FT==FSRFsw)||FT==RFsw){
+    SupLeg=body->link("LLEG_JOINT5");
+    SwLeg=body->link("pivot_R");
+    swingLegId=0;
+  }
+  else if((FT==FSLFsw)||FT==LFsw){
+    SupLeg=body->link("RLEG_JOINT5");
+    SwLeg=body->link("pivot_L");
+    swingLegId=1;
+  }
+  SupLeg2SwLeg= getCustomJointPath(body, SupLeg, SwLeg);  
+  SupLeg2W= getCustomJointPath(body, SupLeg,body->link("WAIST"));   
+
+  SupLeg2SwLeg->calcForwardKinematics();
+
+  //new
+  Vector3 SupLeg_p_Init;
+  Matrix3 SupLeg_R_Init; 
+  SupLeg_p_Init=SupLeg->p();
+  SupLeg_R_Init=SupLeg->R();
+  
+  static const int MAX_IK_ITERATION = 50;
+  static const double LAMBDA = 0.9;
+  
+  const int n = 12;//leg only
+  
+  //Link* target = jpp->endLink();
+  
+  std::vector<double> qorg(n);
+    for(int i=0; i < 12; ++i){
+      qorg[i] = body->joint(i)->q();
+    }
+    
+    //careful
+    VectorXd dq(n);
+    VectorXd v(12);
+    double maxIKErrorSqr=1.0e-16;
+    
+    bool converged = false;
+  
+    for(int i=0; i < MAX_IK_ITERATION; i++){
+      
+      W_R=body->link("WAIST")->R();
+      SwLeg_p = SwLeg->p();
+      SwLeg_R = SwLeg->R();
+    
+      CalJo_biped_toe(body, FT, Jacobian);        
+    
+      Vector3 CM_dp=CM_p- body->calcCenterOfMass();// + body->link("LLEG_JOINT5")->p);
+      Vector3 W_omega=W_R* omegaFromRot(W_R.transpose() * R_ref[WAIST]);
+      Vector3 SW_dp =p_ref[swingLegId] - SwLeg_p;  
+      Vector3 SW_omega = SwLeg_R* omegaFromRot(SwLeg_R.transpose() * R_ref[swingLegId]);
+     
+      //v<< CM_dp, W_omega, SW_dp, SW_omega;
+      v.head<3>()=CM_dp;
+      v.segment<3>(3)=W_omega;
+      v.segment<3>(6)=SW_dp;
+      v.segment<3>(9)=SW_omega;
+
+      //double errsqr =  CM_dp.dot(CM_dp) + W_omega.dot(W_omega) + SW_dp.dot(SW_dp) + SW_omega.dot( SW_omega);
+      double errsqr=v.squaredNorm();
+
+      if(errsqr < maxIKErrorSqr){
+	converged = true;
+	break;
+      }
+      
+      MatrixXd JJ;
+      double dampingConstantSqr=1e-12;
+      JJ = Jacobian *  Jacobian.transpose() + dampingConstantSqr * MatrixXd::Identity(Jacobian.rows(), Jacobian.rows());
+      dq = Jacobian.transpose() * QR.compute(JJ).solve(v);
+
+
+      for(int j=0; j < n; ++j){
+	body->joint(j)->q() += LAMBDA * dq(j);
+      }
+     
+      SupLeg->p()=SupLeg_p_Init;
+      SupLeg->R()=SupLeg_R_Init;
+      SupLeg2SwLeg->calcForwardKinematics();
+      body->calcForwardKinematics();
+      
+    }//for
+    
+    if(!converged){
+      
+      for(int j=0; j < n; ++j){
+	body->joint(j)->q() = qorg[j];
+      }
+ 
+      SupLeg->p()=SupLeg_p_Init;
+      SupLeg->R()=SupLeg_R_Init;
+      SupLeg2SwLeg->calcForwardKinematics();
+      body->calcForwardKinematics();
+    }
+    
+    return converged;          
+}
+
+
+//////ivk_jacobian/////////
+void CalJo_biped_toe(BodyPtr body, FootType FT, Eigen::MatrixXd& out_J)
+{ 
+  Link* SupLeg;
+  Link* SwLeg;
+  JointPathPtr  SupLeg2SwLeg,SupLeg2W;
+  MatrixXd JSupLeg2SwLeg ,JSupLeg2W,Jcom;
+
+  
+  if((FT==FSRFsw)||FT==RFsw){
+    SupLeg=body->link("LLEG_JOINT5");
+    SwLeg=body->link("pivot_R");
+  }
+  else if((FT==FSLFsw)||FT==LFsw){
+    SupLeg=body->link("RLEG_JOINT5");
+    SwLeg=body->link("pivot_L");
+  }
+  SupLeg2SwLeg= getCustomJointPath(body, SupLeg, SwLeg);  
+  SupLeg2W= getCustomJointPath(body, SupLeg,body->link("WAIST"));   
+
+  body->calcCenterOfMass();
+  calcCMJacobian(body, SupLeg, Jcom);
+
+  SupLeg2SwLeg->calcJacobian(JSupLeg2SwLeg);
+  SupLeg2W->calcJacobian(JSupLeg2W);
+  
+  
+  //push in
+  for(int i=0;i<3;i++){
+    for(int j=0;j<12;j++){
+      out_J(i,j)=Jcom(i,j);
+    }
+  }
+  
+  // SupLeg2W
+  for(int i = 0; i <  SupLeg2W->numJoints(); i++) {
+    int id =  SupLeg2W->joint(i)->jointId();
+    for(int j=3;j<6;j++){
+      out_J(j,id)=JSupLeg2W(j,i);
+    }
+  }
+  
+  //SupLeg2SwLeg
+  for(int i = 0; i < SupLeg2SwLeg->numJoints(); i++) {
+    int id = SupLeg2SwLeg->joint(i)->jointId();
+    for(int j=6;j<12;j++){
+      out_J(j,id)=JSupLeg2SwLeg(j-6,i);
+    }
+  }
+  
+}

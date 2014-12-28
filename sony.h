@@ -168,6 +168,7 @@ class sony  : public hrp2Base
   Vector3 p_ref_toe[LINKNUM];
   Matrix3 R_ref_toe[LINKNUM];
  
+  bool usePivot;
   //Eigen::MatrixXd gh;
 };
 

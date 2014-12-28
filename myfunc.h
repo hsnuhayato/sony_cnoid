@@ -80,6 +80,18 @@ void Interplation3(T xs, T dxs, T xf,T dxf, double tf, std::deque<T>& input)
     }
 }
 
+template<class T>
+void Interplation1(T xs,T xf,double tf, std::deque<T>& input)
+{
+  double dt=0.005;
+  int num=(int)(tf/dt+NEAR0);
+  T tmp;
+  for(int i=1;i<num+1;i++){
+    tmp=xs+(xf-xs)*i/num;
+    input.push_back(tmp);
+  }
+}
+
 //double sigma(dvector arr,int x,int y);
 
 
@@ -96,7 +108,7 @@ double sum(double* Array1st,int n);
 ////for robot../////
 void RenewModel(BodyPtr body,Vector3  *p_now, Matrix3 *R_now);
 
-void setModelPosture( BodyPtr body,  TimedDoubleSeq &m_q, FootType FT, Vector3  *p_Init, Matrix3 *R_Init);
+void setModelPosture( BodyPtr body,  TimedDoubleSeq &m_q, FootType FT);
 
 void getModelPosture( BodyPtr body,  TimedDoubleSeq &m_refq);
 
@@ -132,16 +144,20 @@ void NaturalZmp(BodyPtr body, Vector3 &absZMP);
 
 void updateInit(Vector3 *p_now, Vector3 *p_Init, Matrix3 *R_now, Matrix3 *R_Init);
 
-bool walkJudge( BodyPtr body, Vector3 *p_ref, Matrix3 *R_ref, FootType FT, Vector3 RLEG_ref_p, Vector3 LLEG_ref_p, Matrix3  LEG_ref_R);
+bool walkJudge( BodyPtr body, FootType FT, Vector3 RLEG_ref_p, Vector3 LLEG_ref_p, Matrix3  LEG_ref_R);
 
 void adjust_M_PI(double &v);
 
 void atan2adjust(Vector3 &pre, Vector3 &cur);
 
 
-bool CalcIVK_biped(BodyPtr body, Vector3& CM_p, Vector3 *p_ref, Matrix3 *R_ref, FootType FT, Vector3  *p_Init, Matrix3 *R_Init);
+bool CalcIVK_biped(BodyPtr body, Vector3& CM_p, Vector3 *p_ref, Matrix3 *R_ref, FootType FT);
 
 void CalJo_biped(BodyPtr body, FootType FT, Eigen::MatrixXd& out_J);
+
+
+bool CalcIVK_biped_toe(BodyPtr body, Vector3& CM_p, Vector3 *p_ref, Matrix3 *R_ref, FootType FT);
+void CalJo_biped_toe(BodyPtr body, FootType FT, Eigen::MatrixXd& out_J);
 
 
 //bool CalcIVK_biped_toe(BodyPtr body, Vector3& CM_p, Vector3 *p_ref, Matrix3 *R_ref, FootType FT, Vector3  *p_Init, Matrix3 *R_Init);
@@ -151,4 +167,5 @@ Matrix3 rodoriges(Vector3 omega, double dt);
 void SeqPlay32(vector32 body_cur,   vector32 body_ref,  std::deque<vector32>& bodyDeque, double dt);
 
 Matrix3 rotationZ(double theta);
+Matrix3 rotationY(double theta);
 #endif
