@@ -413,10 +413,20 @@ hrp::dmatrix diag(const hrp::dmatrix &in1, const hrp::dmatrix &in2, const hrp::d
   return out;
 }
 */
+
+Vector3 rot2rpy(Matrix3 R)
+{
+  Vector3 euler =R.eulerAngles(2,1,0);
+  Vector3 out(euler(2), euler(1), euler(0));
+
+  return out;
+}
+
 matrix22 RfromMatrix3(Matrix3 Rin)//bimyou
 {
-  Vector3 rpy=rpyFromRot(Rin);
-  Matrix3 R=rotationZ(rpy(2));
+  //Vector3 rpy=rpyFromRot(Rin);
+  //Matrix3 R=rotationZ(rpy(2));
+  Matrix3 R=extractYow(Rin);
   matrix22 R_xy;
   for (int i=0;i<2;i++){
     for(int j=0;j<2;j++){
@@ -952,3 +962,14 @@ Matrix3 rodoriges(Vector3 omega, double dt)
   }
   ofs<<'\n'<<endl;
 */
+
+/*
+//rpy to rot
+Eigen::AngleAxisd rollAngle(roll, Eigen::Vector3d::UnitZ());
+Eigen::AngleAxisd yawAngle(yaw, Eigen::Vector3d::UnitY());
+Eigen::AngleAxisd pitchAngle(pitch, Eigen::Vector3d::UnitX());
+
+Eigen::Quaternion<double> q = rollAngle * yawAngle * pitchAngle;
+
+Eigen::Matrix3d rotationMatrix = q.matrix();
+ */

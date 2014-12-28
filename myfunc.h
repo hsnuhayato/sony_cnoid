@@ -122,6 +122,7 @@ FootType FTselect(BodyPtr body,StepDir dir);
 
 //dmatrix diag(const hrp::dmatrix &in1, const hrp::dmatrix &in2, const hrp::dmatrix &in3, const hrp::dmatrix &in4);
 
+Vector3 rot2rpy(Matrix3 R);
 matrix22 RfromMatrix3(Matrix3 R);
 Matrix3 extractYow(Matrix3 Rin);
 

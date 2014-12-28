@@ -107,6 +107,26 @@ def buttonEvent():
     x=in1.getText()
     setObjectV(str(x))
 
+def buttonEvent2():
+    x=in2.getText()
+    setObjectV(str(x))
+
+def setRotGainEvent():
+    x=inRot.getText()
+    setRotGain(str(x))
+
+def setPosGainEvent():
+    x=inPos.getText()
+    setPosGain(str(x))
+
+def setAttGainEvent():
+    x=inAtt.getText()
+    setAttGain(str(x))
+
+def setTimeEvent():
+    x=inTime.getText()
+    setconstTime(str(x))
+
 ##Attach
 obj = createButton("testMove", testMove)
 pnl.add(obj)
@@ -127,6 +147,44 @@ obj = createButton("setObjectV", buttonEvent)
 pnl.add(obj)
 in1=JTextField("5 0 0 0 0 0",15)
 pnl.add(in1)
+
+obj = createButton("setObjectV", buttonEvent2)
+pnl.add(obj)
+in2=JTextField("0 0 0 0 0 0",15)
+pnl.add(in2)
+
+obj = createButton("setPosSwitch", setPosSwitch)
+pnl.add(obj)
+
+#obj = createButton("stPara", getSTparameter)
+#pnl.add(obj)
+
+obj = createButton("setPosGain", setPosGainEvent)
+pnl.add(obj)
+inPos=JTextField("8000 0.005",15)
+pnl.add(inPos)
+
+obj = createButton("setRotSwitch", setRotSwitch)
+pnl.add(obj)
+
+obj = createButton("setRotGain", setRotGainEvent)
+pnl.add(obj)
+inRot=JTextField("500 500 0.05",15)
+pnl.add(inRot)
+
+obj = createButton("setAttSwitch", setAttSwitch)
+pnl.add(obj)
+
+obj = createButton("setAttGainRollPitch", setAttGainEvent)
+pnl.add(obj)
+inAtt=JTextField("0.1 0.1 0.003 0.003",15)
+pnl.add(inAtt)
+
+#obj = createButton("setconstTimeP&A", setTimeEvent)
+#pnl.add(obj)
+#inTime=JTextField("0.1 0.1 ",15)
+#pnl.add(inTime)
+
 
 #obj = createButton("st_hogex", st_hogex)
 #pnl.add(obj)

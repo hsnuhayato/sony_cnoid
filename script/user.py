@@ -11,7 +11,12 @@ import rtm
 import waitInput
 #import bodyinfo
 import OpenHRP
-from OpenHRP.RobotHardwareServicePackage import SwitchStatus
+#from OpenHRP.RobotHardwareServicePackage import SwitchStatus
+
+global posswitch,rotswitch,attswitch
+posswitch=1
+rotswitch=1
+attswitch=1
 
 def init(robotHost=None):
     if robotHost != None:
@@ -134,7 +139,8 @@ def createComps(hostname=socket.gethostname()):
     #user = rtm.findRTC("sony0")
     #joystick= rtm.findRTC("GamepadRTC0")
     #kf=rtm.findRTC("KalmanFilter0")
-
+    #st=rtm.findRTC("Stabilizer0")
+    
     if servo==None:
         print "no servo component"
         return
@@ -551,6 +557,80 @@ def userTest():
 
     #saveLog("/tmp/hrp_testpat_"+time.strftime('%Y%m%d%H%M'))
 """
+
+def getSTparameter():
+    stParam =OpenHRP.StabilizerServicePackage.stParamHolder()
+    st_svc.getParameter(stParam)
+    return stParam.value
+    #print stParam.value.eefm_rot_damping_gain
+
+def setRotGain(x):
+    itemlist = x.split()
+    numbers = [ float(item) for item in itemlist ]
+    stParam=getSTparameter()
+    stParam.eefm_rot_damping_gain[0]=numbers[0]
+    stParam.eefm_rot_damping_gain[1]=numbers[1]
+    stParam.eefm_rot_time_const=numbers[2] 
+    st_svc.setParameter(stParam)
+    stParam=getSTparameter()
+    print stParam.eefm_rot_damping_gain
+
+def setPosGain(x):
+    itemlist = x.split()
+    numbers = [ float(item) for item in itemlist ]
+    stParam=getSTparameter()
+    stParam.eefm_pos_damping_gain=numbers[0]
+    stParam.eefm_pos_time_const_support=eefm_pos_time_const_swing=numbers[1] 
+    st_svc.setParameter(stParam)
+    #stParam=getSTparameter()
+    #print stParam.eefm_pos_damping_gain
+
+def setAttGain(x):
+    itemlist = x.split()
+    numbers = [ float(item) for item in itemlist ]
+    stParam=getSTparameter()
+    stParam.eefm_body_attitude_control_gain[0]=numbers[0] #roll
+    stParam.eefm_body_attitude_control_gain[1]=numbers[1] #pitch
+    stParam.eefm_body_attitude_control_time_const[0]=numbers[2]
+    stParam.eefm_body_attitude_control_time_const[1]=numbers[3] 
+    st_svc.setParameter(stParam)
+    #stParam=getSTparameter()
+    #print stParam.eefm_body_attitude_control_gain[0]," ",stParam.eefm_body_attitude_control_gain[1]
+
+def setconstTime(x):
+    itemlist = x.split()
+    numbers = [ float(item) for item in itemlist ]
+    stParam=getSTparameter()
+    stParam.eefm_rot_time_const=numbers[0] 
+    stParam.eefm_pos_time_const_support=eefm_pos_time_const_swing=numbers[0] 
+    stParam.eefm_body_attitude_control_time_const[0]=numbers[1]
+    stParam.eefm_body_attitude_control_time_const[1]=numbers[1] 
+    st_svc.setParameter(stParam)
+   
+def setPosSwitch():
+    global posswitch
+    posswitch=not posswitch
+    #print "pos switch", posswitch
+    stParam=getSTparameter()
+    stParam.eefm_pos_control_switch=posswitch 
+    st_svc.setParameter(stParam)
+
+def setRotSwitch():
+    global rotswitch
+    rotswitch=not rotswitch
+    #print "rot switch", rotswitch
+    stParam=getSTparameter()
+    stParam.eefm_rot_control_switch=rotswitch 
+    st_svc.setParameter(stParam)
+
+def setAttSwitch():
+    global attswitch
+    attswitch=not attswitch
+    #print "att switch", attswitch
+    stParam=getSTparameter()
+    stParam.eefm_att_control_switch=attswitch 
+    st_svc.setParameter(stParam)
+
 ##########
 #grxuer method
 

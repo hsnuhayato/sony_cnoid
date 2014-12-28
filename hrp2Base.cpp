@@ -107,12 +107,14 @@ RTC::ReturnCode_t hrp2Base::onInitialize()
   m_robot=bl.load( prop["model"].c_str());
   std::cout<<"sony dof robot "<<m_robot->numJoints()<<std::endl;
   m_robot->rootLink()->p()<<0.0, 0.0, 0.705;
+  for(unsigned int i=0;i<dof;i++)
+    m_robot->joint(i)->q()=0; 
   //m_robot->rootLink()->p()(0)=0.0;
   //m_robot->rootLink()->p()=Vector3(0, 0 ,0);
   //std::cout<<"R "<<m_robot->rootLink()->name()<<std::endl;
   m_robot->calcForwardKinematics();
-  m_robot->calcCenterOfMass();
-  //std::cout<<"sony robot mass "<<m_robot->mass()<<" "<<m_robot->link("RLEG_JOINT5")->p()<<endl;
+  Vector3 cm=m_robot->calcCenterOfMass();
+  std::cout<<"sony centerof mass "<<cm<<endl;//m_robot->mass()
 
   mass=m_robot->mass();
 

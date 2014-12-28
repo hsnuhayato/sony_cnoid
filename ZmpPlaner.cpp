@@ -54,7 +54,7 @@ ZmpPlaner::ZmpPlaner()
   pitch_angle=15*M_PI/180;
   Tp=Tdbl/4;
   link_b_front<< 0.13, 0.0, -0.105;
-  link_b_rare<< -0.1, 0.0, -0.105;
+  link_b_rear<< -0.1, 0.0, -0.105;
   rzmpEnd<<0.0,0.0;
 }
       
@@ -132,7 +132,8 @@ void ZmpPlaner::PlanCP(FootType FT, Vector3 *p_ref, Matrix3 *R_ref, vector2 swLe
 
     //for rzmp
     Interplation5(cZMP_pre, zero, zero, cZMP, zero, zero, Tdbl, rfzmp);
-    Interplation5(cZMP, zero, zero, cZMP, zero, zero, Tsup, rfzmp);
+    //Interplation5(cZMP, zero, zero, cZMP, zero, zero, Tsup, rfzmp);
+    Interplation5(SupLeg_p, zero, zero, SupLeg_p, zero, zero, Tsup, rfzmp);
 
   }
 }
@@ -641,12 +642,12 @@ void ZmpPlaner::calcSwingLegXYONew_toe(BodyPtr body, FootType FT, Vector3 *p_ref
   if((swLegRef_p_nomal(0)-swLegIni_p_nomal(0))>=0){
     //front;
     link_b_s= link_b_front;
-    link_b_f= link_b_rare;
+    link_b_f= link_b_rear;
     pitch=pitch_angle;
   }
   else{
     //back;
-    link_b_s= link_b_rare;
+    link_b_s= link_b_rear;
     link_b_f= link_b_front;
     pitch=-pitch_angle;
   }
@@ -860,12 +861,12 @@ void ZmpPlaner::PlanZMPnew_toe_dynamic(BodyPtr body, FootType FT, Vector3 *p_ref
   if((swLegRef_p_nomal(0)-swLegIni_p_nomal(0))>=0){
     //front;
     link_b_s= link_b_front;
-    link_b_f= link_b_rare;
+    link_b_f= link_b_rear;
     pitch=pitch_angle;
   }
   else{
     //back;
-    link_b_s= link_b_rare;
+    link_b_s= link_b_rear;
     link_b_f= link_b_front;
     pitch=-pitch_angle;
   }

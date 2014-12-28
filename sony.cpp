@@ -105,6 +105,9 @@ RTC::ReturnCode_t sony::onInitialize()
 
 RTC::ReturnCode_t sony::onExecute(RTC::UniqueId ec_id)
 {
+  //if(!m_rhsensorIn.isNew())
+  //  return RTC::RTC_OK;
+
   //sychronize with simulator
   step_counter+=1;
   step_counter=step_counter%m_nStep;
@@ -118,8 +121,8 @@ RTC::ReturnCode_t sony::onExecute(RTC::UniqueId ec_id)
   if(m_axesIn.isNew()){
     m_axesIn.read();
 
-    velobj(0)=m_axes.data[1]*-6;
-    velobj(1)=m_axes.data[0]*-6;
+    velobj(0)=m_axes.data[1]*-5;
+    velobj(1)=m_axes.data[0]*-5;
     velobj(5)=m_axes.data[2]*-3;
     /*
     double velsqr=pow(velobj(0),2) + pow(velobj(1),2);
@@ -576,7 +579,7 @@ void sony::start()
 
   cm_ref=m_robot->calcCenterOfMass();// 
   cout<<"cm "<<cm_ref<<endl;
-  //cout<<"inipos"<<'\n'<<p_now[RLEG][0]<<" "<<p_now[LLEG][0]<<endl;
+  //cout<<"inipos"<<'\n'<<m_robot->link("RLEG_JOINT5")->R()<<'\n'<<m_robot->link("LLEG_JOINT5")->R()<<endl;
 
   //for expos
   for(int i=0;i<LINKNUM;i++){
@@ -605,14 +608,29 @@ void sony::start()
   p_obj2RLEG = p_Init[RLEG] - object_ref->p(); 
   p_obj2LLEG = p_Init[LLEG] - object_ref->p(); 
   R_LEG_ini=  LEG_ref_R= Eigen::MatrixXd::Identity(3,3);
+
   //for pivot///////////////////////////////////////////////
-  /*
-  pt_R->b=0.13, 0.0, -0.105;
-  pt_L->b=0.13, 0.0, -0.105;
-  pt_R->name="pivot_R";
-  pt_L->name="pivot_L";
-  pt_R->jointType=hrp::Link::FIXED_JOINT;
-  pt_L->jointType=hrp::Link::FIXED_JOINT;
+  Position T;
+  T.linear()= Eigen::MatrixXd::Identity(3,3);
+  T.translation()=Vector3(0.13, 0.0, -0.105);
+  pt_R->setOffsetPosition(T);
+  pt_L->setOffsetPosition(T);
+  pt_R->setName("pivot_R");
+  pt_L->setName("pivot_L");
+  pt_R->setJointType(cnoid::Link::FIXED_JOINT);
+  pt_L->setJointType(cnoid::Link::FIXED_JOINT);
+  m_robot->link("RLEG_JOINT5")->appendChild(pt_R);
+  m_robot->link("LLEG_JOINT5")->appendChild(pt_L);
+  m_robot->updateLinkTree();
+  m_robot->calcForwardKinematics();
+  //cout<<m_profile.instance_name<<":pivot "<<m_robot->link("pivot_R")->p()<<endl;
+  //cout<<m_robot->link("RLEG_JOINT5")->p()<<endl;
+  
+  /*  
+  pt_R->b()<<0.13, 0.0, -0.105;
+  pt_L->b()<<0.13, 0.0, -0.105;
+  pt_R->jointType=cnoid::Link::FIXED_JOINT;
+  pt_L->jointType=cnoid::Link::FIXED_JOINT;
   m_robot->link("RLEG_JOINT5")->addChild(pt_R);
   m_robot->link("LLEG_JOINT5")->addChild(pt_L);
  
@@ -662,13 +680,16 @@ void sony::testMove()
            0.698132, -0.122173, -0, -1.50971, -0.122173, 0, 0, 0, 
            0.698132, 0.122173, 0, -1.50971, 0.122173, 0, 0, 0;
   */
+
+  
   body_ref<<7.6349e-07, 0.00326766, -0.409632, 0.787722, -0.377504, -0.00325755,
-            7.63749e-07, 0.0032676, -0.409578, 0.787609, -0.377443, -0.00325748, 
+    //7.63749e-07, 0.0032676, -0.409578, 0.787609, -0.377443, -0.00325748, 
+            7.6349e-07, 0.00326766, -0.409632, 0.787722, -0.377504, -0.00325755,
             0, 0, 0, 0, 
             0.698132, -0.122173, 0, -1.50971, -0.122173, 0, 0, 0,
             0.698132,  0.122173, 0, -1.50971,  0.122173, 0, 0, 0;
-
-  Interplation5(body_cur,  zero,  zero, body_ref,  zero,  zero, 3, bodyDeque);
+	 
+  Interplation5(body_cur,  zero,  zero, body_ref,  zero,  zero, 1, bodyDeque);
   /*
   //
   //new posture

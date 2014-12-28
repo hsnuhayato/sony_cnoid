@@ -76,7 +76,7 @@ class ZmpPlaner {
   //for pitch
   std::deque<Vector3> link_b_deque;
   Vector3 link_b_front;
-  Vector3 link_b_rare;
+  Vector3 link_b_rear;
 
   double offsetZMPx;
   double offsetZMPy;
