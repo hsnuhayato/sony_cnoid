@@ -436,7 +436,7 @@ void sony::prm2Planzmp(FootType FT, Vector3 *p_ref, Matrix3 *R_ref, Vector3 RLEG
   rfzmp.clear();
   
   if(CommandIn==5)
-    zmpP->PlanCPstop(FT, p_ref, R_ref, swLegRef_p, LEG_ref_R, rfzmp);
+    zmpP->PlanCPstop(m_robot, FT, p_ref, R_ref, swLegRef_p, LEG_ref_R, rfzmp);
   else 
     zmpP->PlanCP(m_robot, FT, p_ref, R_ref, swLegRef_p, LEG_ref_R, rfzmp, usePivot);
   
