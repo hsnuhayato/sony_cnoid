@@ -12,8 +12,8 @@ ZmpPlaner::ZmpPlaner()
   Tsup=0.7;
   Tdbl=0.1;//for preview
   //Tdbl=0.03;//test
-
   Tdbl=0.2;//toe mode
+  //Tdbl is set in calcSwingLegCP
   dt=0.005;
   disfoot=0.19;
   offsetZMPy=0.01;//usually
@@ -441,41 +441,44 @@ void ZmpPlaner::calcSwingLegCP( BodyPtr m_robot, FootType FT, Vector3 *p_ref, Ma
   ///pivot
   Vector3 link_b_s;
   Vector3 link_b_f;
-  double pitch;
+  double pitch_s;
+  double pitch_f;
+  matrix22 swLegIni_R=RfromMatrix3(swLeg_cur_R);//33>>22
+  vector2 swLegIni_p_nomal=swLegIni_R.transpose()*swLegIni_p;
+  vector2 swLegRef_p_nomal=swLegIni_R.transpose()*swLegRef_p;
   //for pivot////////////////////////////////////////////
   if(usePivot){
-    matrix22 swLegIni_R=RfromMatrix3(swLeg_cur_R);//33>>22
-    vector2 swLegIni_p_nomal=swLegIni_R.transpose()*swLegIni_p;
-    vector2 swLegRef_p_nomal=swLegIni_R.transpose()*swLegRef_p;
+ 
  
     //cout<<swLegRef_p_nomal(0)-swLegIni_p_nomal(0)<<endl;
-
-    //front;
-    link_b_s= link_b_front;
-    link_b_f= link_b_rear;
-    pitch=pitch_angle;
-    /*
-    if((swLegRef_p_nomal(0)-swLegIni_p_nomal(0))>0.01){
+    
+    if((swLegRef_p_nomal(0)-swLegIni_p_nomal(0))>0.05){
       //front;
+      Tdbl=0.2;
       link_b_s= link_b_front;
       link_b_f= link_b_rear;
-      pitch=pitch_angle;
-      cout<<"front"<<endl;
+      pitch_s=pitch_angle;
+      pitch_f=-pitch_angle;
+      //cout<<"front"<<endl;
     }
-    else if((swLegRef_p_nomal(0)-swLegIni_p_nomal(0))<-0.01){
+    else if((swLegRef_p_nomal(0)-swLegIni_p_nomal(0))<-0.05){
       //back;
+      Tdbl=0.2;
       link_b_s= link_b_rear;
       link_b_f= link_b_front;
-      pitch=-pitch_angle;
-      cout<<"back"<<endl;
+      pitch_s=-pitch_angle*0.5;
+      pitch_f=pitch_angle;
+      //pitch=0.0;
+      //cout<<"back"<<endl;
     }
     else{
+      Tdbl=0.1;
       link_b_s<<0.0, 0.0, -0.105;
       link_b_f<<0.0, 0.0, -0.105;
-      pitch=0.0;
-      cout<<"same"<<endl;
+      pitch_s=pitch_f=0.0;
+      //cout<<"same"<<endl;
     }
-    */
+    
     
     swLegIni_p+= pfromVector3(Vector3(swLeg_cur_R*link_b_s));
     swLegRef_p+= pfromVector3(Vector3(tar_R*link_b_f));
@@ -488,10 +491,16 @@ void ZmpPlaner::calcSwingLegCP( BodyPtr m_robot, FootType FT, Vector3 *p_ref, Ma
   else if((FT==RFsw)||(FT==LFsw)){
     //x y
     if(usePivot){
-      double vel=pitch *0.13/(Tp+Tv);  
+      double vel=pitch_s *0.13/(Tp+Tv);  
       vector2 sp;
-      sp<<vel*sin(pitch_angle)*1.5,0.0;
-      double sz=vel*cos(pitch_angle)*1.5;
+      sp<<vel*sin(pitch_s)*1.5,0.0;
+      double sz=vel*cos(pitch_s)*1.5;
+
+      //test param
+      vel=  pitch_s/Tp*0.3*0.23;
+      sp<<vel*sin(pitch_s)*5, 0.0;
+      sp=swLegIni_R*sp;
+      sz=vel*cos(pitch_s)*2.5;
 
       Interplation5(swLegIni_p, zero, zero, swLegIni_p, zero, zero, Tdbl+Tv, swLegxy);
       Interplation5(swLegIni_p, sp, zero, swLegRef_p, zero, zero, Tsup-2*Tv, swLegxy);
@@ -540,13 +549,15 @@ void ZmpPlaner::calcSwingLegCP( BodyPtr m_robot, FootType FT, Vector3 *p_ref, Ma
       Interplation5(link_b_s,zerov3,zerov3,link_b_s, zerov3, zerov3, Tdbl+Tv, link_b_deque);
       Interplation5(link_b_s,zerov3,zerov3,link_b_f, zerov3, zerov3, Tsup-2*Tv, link_b_deque);
       Interplation5(link_b_f,zerov3,zerov3,link_b_f, zerov3, zerov3, Tv, link_b_deque);//
-      
+     
       index.clear();
       
-      Interplation1( 0.0, 0.0, Tdbl-Tp, index);     
-      Interplation3(0.0, 0.0, pitch, 0.0, Tp, index);
-      Interplation3(pitch, 0.0, -pitch, 0.0, Tsup-Tp, index);
-      Interplation3(-pitch,  pitch/(Tp)*0.3,  0.0, 0.0, Tp, index);
+      //Interplation1( 0.0, 0.0, Tdbl-Tp, index);   
+                                        //0  
+      Interplation3(0.0, 0.0, pitch_s,  pitch_s/(Tp)*0.3, Tp, index);
+                                //used to be 0
+      Interplation3(pitch_s,  pitch_s/(Tp)*0.3, pitch_f,  pitch_f/(Tp)*0.1, Tsup-Tp, index);
+      Interplation3(pitch_f,  pitch_f/(Tp)*0.1,  0.0, 0.0, Tp, index);
     
       /*
       Interplation1(0.0,  0.0, Tdbl-Tp, index);  

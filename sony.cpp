@@ -122,9 +122,20 @@ RTC::ReturnCode_t sony::onExecute(RTC::UniqueId ec_id)
   if(m_axesIn.isNew()){
     m_axesIn.read();
 
-    velobj(0)=m_axes.data[1]*-5;
+    velobj(0)=m_axes.data[1]*-13;
     velobj(1)=m_axes.data[0]*-5;
     velobj(5)=m_axes.data[2]*-3;
+
+    //wireless
+   if(m_axes.data[17]>=0.1)//o button
+      step=1;
+    else if(m_axes.data[18]>=0.1)//x burron
+      step=0;
+   //head
+   m_robot->link("HEAD_JOINT1")->q()-=0.2*m_axes.data[8]*M_PI/180;
+   m_robot->link("HEAD_JOINT1")->q()+=0.2*m_axes.data[10]*M_PI/180;
+   m_robot->link("HEAD_JOINT0")->q()-=0.2*m_axes.data[9]*M_PI/180;
+   m_robot->link("HEAD_JOINT0")->q()+=0.2*m_axes.data[11]*M_PI/180;
     /*
     double velsqr=pow(velobj(0),2) + pow(velobj(1),2);
     if( velsqr > 64){
@@ -137,11 +148,13 @@ RTC::ReturnCode_t sony::onExecute(RTC::UniqueId ec_id)
   if(m_buttonsIn.isNew()){
     m_buttonsIn.read();
     //cout<<"buttom is new"<<endl;
-  
+    /*
+    //wire
     if(m_buttons.data[1]==1)//o button
       step=1;
     else if(m_buttons.data[0]==1)//x burron
       step=0;
+    */
   }
 
    //_/_/_/_/_/_/_/_/_/_/_/_/main algorithm_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
@@ -457,6 +470,7 @@ void sony::walkingMotion(BodyPtr m_robot, FootType FT, Vector3 &cm_ref, Vector3 
     p_ref[swingLeg](0)=zmpP->swLegxy.at(0)[0];
     p_ref[swingLeg](1)=zmpP->swLegxy.at(0)[1];
     p_ref[swingLeg](2)=p_Init[swingLeg][2]+zmpP->Trajzd.at(0);
+    //p_ref[swingLeg](2)=zmpP->Trajzd.at(0);
     R_ref[swingLeg]= zmpP->swLeg_R.at(0);
     //zmpP->calcWaistR(FT,  R_ref); 
     R_ref[WAIST]=zmpP->calcWaistR(FT,  m_robot); 
