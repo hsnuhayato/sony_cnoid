@@ -122,7 +122,7 @@ RTC::ReturnCode_t sony::onExecute(RTC::UniqueId ec_id)
   if(m_axesIn.isNew()){
     m_axesIn.read();
 
-    velobj(0)=m_axes.data[1]*-5;
+    velobj(0)=m_axes.data[1]*-13;
     velobj(1)=m_axes.data[0]*-5;
     velobj(5)=m_axes.data[2]*-3;
     /*
@@ -457,6 +457,7 @@ void sony::walkingMotion(BodyPtr m_robot, FootType FT, Vector3 &cm_ref, Vector3 
     p_ref[swingLeg](0)=zmpP->swLegxy.at(0)[0];
     p_ref[swingLeg](1)=zmpP->swLegxy.at(0)[1];
     p_ref[swingLeg](2)=p_Init[swingLeg][2]+zmpP->Trajzd.at(0);
+    //p_ref[swingLeg](2)=zmpP->Trajzd.at(0);
     R_ref[swingLeg]= zmpP->swLeg_R.at(0);
     //zmpP->calcWaistR(FT,  R_ref); 
     R_ref[WAIST]=zmpP->calcWaistR(FT,  m_robot); 
