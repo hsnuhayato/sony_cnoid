@@ -443,9 +443,12 @@ void ZmpPlaner::calcSwingLegCP( BodyPtr m_robot, FootType FT, Vector3 *p_ref, Ma
   Vector3 link_b_f;
   double pitch_s;
   double pitch_f;
+<<<<<<< HEAD
   matrix22 swLegIni_R=RfromMatrix3(swLeg_cur_R);//33>>22
   vector2 swLegIni_p_nomal=swLegIni_R.transpose()*swLegIni_p;
   vector2 swLegRef_p_nomal=swLegIni_R.transpose()*swLegRef_p;
+=======
+>>>>>>> f3bd4abc164d6d61794c5eab250241c72514f80f
   //for pivot////////////////////////////////////////////
   if(usePivot){
  
@@ -495,11 +498,18 @@ void ZmpPlaner::calcSwingLegCP( BodyPtr m_robot, FootType FT, Vector3 *p_ref, Ma
       vector2 sp;
       sp<<vel*sin(pitch_s)*1.5,0.0;
       double sz=vel*cos(pitch_s)*1.5;
+<<<<<<< HEAD
 
       //test param
       vel=  pitch_s/Tp*0.3*0.23;
       sp<<vel*sin(pitch_s)*5, 0.0;
       sp=swLegIni_R*sp;
+=======
+      
+      //test param
+      vel=  pitch_s/Tp*0.3*0.23;
+      sp<<vel*sin(pitch_s)*5, 0.0;
+>>>>>>> f3bd4abc164d6d61794c5eab250241c72514f80f
       sz=vel*cos(pitch_s)*2.5;
 
       Interplation5(swLegIni_p, zero, zero, swLegIni_p, zero, zero, Tdbl+Tv, swLegxy);
