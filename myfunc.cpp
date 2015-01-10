@@ -467,16 +467,19 @@ Vector2 pfromVector3(Vector3 p)
   return p_xy;
 }
 
-void NaturalZmp(BodyPtr body, Vector3 &absZMP)
+void NaturalZmp(BodyPtr body, Vector3 &absZMP, double offset_x)
 {
   matrix22 RLeg_R(RfromMatrix3(body->link("RLEG_JOINT5")->R()));
   matrix22 LLeg_R(RfromMatrix3(body->link("LLEG_JOINT5")->R()));
   Vector2 pfzmp;
   Vector2 zmpoffset(MatrixXd::Zero(2,1));
+  zmpoffset<<offset_x, 0.0;
+
   pfzmp(0)=(body->link("RLEG_JOINT5")->p()(0) + body->link("LLEG_JOINT5")->p()(0))/2;
   pfzmp(1)=(body->link("RLEG_JOINT5")->p()(1) + body->link("LLEG_JOINT5")->p()(1))/2;
-  pfzmp= pfzmp + (RLeg_R*zmpoffset + LLeg_R*zmpoffset)/2;
+  //pfzmp= pfzmp + (RLeg_R*zmpoffset + LLeg_R*zmpoffset)/2;
   
+  pfzmp += RfromMatrix3(body->link("WAIST")->R())*zmpoffset;
   absZMP(0)=pfzmp(0);
   absZMP(1)=pfzmp(1);
   absZMP(2)=0; 

@@ -5,7 +5,7 @@
  * $Id$ 
  */
 #include "sony.h"
-//std::ofstream ofs("/home/wu/src/HRP3.1x/sony_cnoid/sony.log");
+std::ofstream ofs("/home/wu/src/HRP3.1x/sony_cnoid/sony.log");
 // Module specification
 // <rtc-template block="module_spec">
 static const char* sony_spec[] =
@@ -49,9 +49,9 @@ RTC::ReturnCode_t sony::onInitialize()
   // Set InPort buffers
   addInPort("axes", m_axesIn);
   addInPort("buttons", m_buttonsIn);
-  //for ps3 controll
-  m_axes.data.length(8);
-  m_buttons.data.length(11);
+  //for ps3 controller
+  m_axes.data.length(29);
+  m_buttons.data.length(17);
   // Set OutPort buffer
 
   // Set service provider to Ports
@@ -72,8 +72,9 @@ RTC::ReturnCode_t sony::onInitialize()
   stopflag=1;
   count=0;
   step_counter=0;
-  absZMP<<0.0, 0.0, 0.0;
-  relZMP<<0.0, 0.0, 0.0;
+  cm_offset_x=0.015;
+  absZMP<<cm_offset_x, 0.0, 0.0;
+  relZMP<<cm_offset_x, 0.0, 0.0;
   step=0;
 
   flagcalczmp=0;
@@ -211,7 +212,7 @@ RTC::ReturnCode_t sony::onExecute(RTC::UniqueId ec_id)
   }
     
  
-  //ofs<<m_rfsensor.data[2]<<" "<<m_lfsensor.data[2]<<endl;
+  ofs<<m_rfsensor.data[2]-m_lfsensor.data[2]<<endl;
    
  
   return RTC::RTC_OK;
@@ -245,14 +246,6 @@ inline void sony::calcWholeIVK()
       cerr<<"ivk err"<<endl;
   }
 
-  /*
- //if(CalcIVK_biped_toe(m_robot, cm_ref, p_ref_toe, R_ref_toe, FT, p_Init, R_Init)){//toe mode
-    //for toe mode
-    p_ref[RLEG]=m_robot->link("RLEG_JOINT5")->p();
-    R_ref[RLEG]=m_robot->link("RLEG_JOINT5")->R();
-    p_ref[LLEG]=m_robot->link("LLEG_JOINT5")->p();
-    R_ref[LLEG]=m_robot->link("LLEG_JOINT5")->R();
-    */
 }
 
 
@@ -260,7 +253,7 @@ inline void sony::zmpHandler()
 {
   //waiting
   if(stopflag){
-    NaturalZmp(m_robot, absZMP);
+    NaturalZmp(m_robot, absZMP, cm_offset_x);
   }
   //walking
   else{
@@ -370,7 +363,7 @@ void sony::waitingMotion(Vector3 &cm_ref, PreviewControl *PC)
 void sony::start2walk(BodyPtr m_robot, ZmpPlaner *zmpP, PreviewControl *PC, bool &stopflag, Vector3 cm_ref)
 {// this is for FSRF or FSLF
   Vector3 rzmpInit;
-  NaturalZmp(m_robot, rzmpInit);
+  NaturalZmp(m_robot, rzmpInit, cm_offset_x);
   zmpP->setInit( rzmpInit(0) , rzmpInit(1) );
   
   PC->setInitial(cm_ref); 
@@ -493,7 +486,7 @@ void sony::walkingMotion(BodyPtr m_robot, FootType FT, Vector3 &cm_ref, Vector3 
     } 
     ////////////////////////////
 
-    //contact states
+    //contact states ..no good if climb stair
     if(zmpP->Trajzd.at(0)<1e-9)
       m_contactStates.data[swingLeg]=1;
     else 
@@ -682,7 +675,8 @@ void sony::start()
   if(usePivot){
     Position T;
     T.linear()= Eigen::MatrixXd::Identity(3,3);
-    T.translation()=Vector3(0.0, 0.0, -0.105);
+    //foot cm offset
+    T.translation()=Vector3(cm_offset_x, 0.0, -0.105);
     pt_R->setOffsetPosition(T);
     pt_L->setOffsetPosition(T);
     pt_R->setName("pivot_R");
@@ -725,7 +719,11 @@ void sony::start()
   double w=sqrt(9.806/cm_ref(2));
   zmpP->setw(w);
 
-  //ooo
+  Vector3 rzmpInit;
+  NaturalZmp(m_robot, rzmpInit, cm_offset_x);
+  zmpP->setInit( rzmpInit(0) , rzmpInit(1) );//for cp init
+  
+//ooo
   playflag=1;
   
 }
@@ -757,14 +755,30 @@ void sony::testMove()
   */
 
   
+  //ver3 cm(0)==0
+  /*
   body_ref<<7.6349e-07, 0.00326766, -0.409632, 0.787722, -0.377504, -0.00325755,
     //7.63749e-07, 0.0032676, -0.409578, 0.787609, -0.377443, -0.00325748, 
             7.6349e-07, 0.00326766, -0.409632, 0.787722, -0.377504, -0.00325755,
             0, 0, 0, 0, 
             0.698132, -0.122173, 0, -1.50971, -0.122173, 0, 0, 0,
             0.698132,  0.122173, 0, -1.50971,  0.122173, 0, 0, 0;
-	 
+  */
+	
+  //ver4 cm(0)==0.015
+  body_ref<<7.63538e-07, 0.00326758, -0.376392, 0.784674, -0.407696, -0.00325747,
+            7.63538e-07, 0.00326758, -0.376392, 0.784674, -0.407696, -0.00325747, 
+           0, 0, 0, 0,
+           0.698132, -0.122173, 0, -1.50971, -0.122173, 0, 0, 0,
+           0.698132,  0.122173, 0, -1.50971,  0.122173, 0, 0, 0;
+ 
+  //for(int i=0;i<6;i++){
+  //body_ref(i)=(body_ref(i)+body_ref(i+6))/2;
+    //  body_ref(i+6)=body_ref(i);
+  //}
+  
   Interplation5(body_cur,  zero,  zero, body_ref,  zero,  zero, 1, bodyDeque);
+  
   /*
   //
   //new posture
@@ -772,10 +786,12 @@ void sony::testMove()
             0, 0.00332796, -0.482666, 0.859412, -0.370882, -0.00322683,  0,  0,  0,  0,
        deg2rad(40.0), -deg2rad(7.0),  -deg2rad(0.0),   deg2rad(-86.5),  -deg2rad(7.0), 0.0, 0.0, 0.0,
        deg2rad(40.0),  deg2rad(7.0),   deg2rad(0.0),   deg2rad(-86.5),  deg2rad(7.0), 0.0, 0.0, 0.0 ;
-  
+  */
+
+  /*
  for(int i=0;i<32;i++)
    m_mc.data[i]=body_ref(i);
- setModelPosture(m_robot, m_mc, FT, p_Init, R_Init);
+ setModelPosture(m_robot, m_mc, FT);
  RenewModel(m_robot, p_now, R_now);
  cm_ref=m_robot->calcCenterOfMass();// 
  cout<<"cm "<<cm_ref<<endl;
@@ -790,9 +806,10 @@ void sony::testMove()
  }
  R_ref[WAIST]=Eigen::MatrixXd::Identity(3,3);
 
- cm_ref(0)=cm_ref(1)=0.0;
+ cm_ref(0)=0.015;
+ cm_ref(1)=0.0;
  cm_ref(2)=0.827752;
- if(CalcIVK_biped(m_robot, cm_ref, p_ref, R_ref, FT, p_Init, R_Init)){
+ if(CalcIVK_biped(m_robot, cm_ref, p_ref, R_ref, FT)){
    cout<<"okok"<<endl;
    for(unsigned int i=0;i<32;i++){
      body_ref(i)=m_robot->joint(i)->q();
@@ -803,7 +820,7 @@ void sony::testMove()
  else
    cout<<"ivk error"<<endl;
  Interplation5(body_cur,  zero,  zero, body_ref,  zero,  zero, 3, bodyDeque);
- */
+  */
 
   /*
   cm_ref(0)+=0.125;

@@ -130,10 +130,12 @@ RTC::ReturnCode_t hrp2Base::onInitialize()
   prop["fgain"]>>fgain;
   
   //body set
+  /*
   for(unsigned int i=0;i<dof;i++)
     m_robot->joint(i)->q()=0; 
   m_robot->link("WAIST")->p()<<0, 0, 0.705;
   m_robot->calcForwardKinematics();
+  */
   RenewModel(m_robot, p_now, R_now);
   updateInit(p_now, p_Init, R_now, R_Init);
   m_robot->calcCenterOfMass();

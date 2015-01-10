@@ -140,7 +140,7 @@ Matrix3 extractYow(Matrix3 Rin);
 
 vector2 pfromVector3(Vector3 p);
 
-void NaturalZmp(BodyPtr body, Vector3 &absZMP);
+void NaturalZmp(BodyPtr body, Vector3 &absZMP, double offset_x);
 
 void updateInit(Vector3 *p_now, Vector3 *p_Init, Matrix3 *R_now, Matrix3 *R_Init);
 

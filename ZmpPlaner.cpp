@@ -21,14 +21,13 @@ ZmpPlaner::ZmpPlaner()
   offsetZMPy=0.025;
 
   //offsetZMPx=0.01371;
-  offsetZMPx=0.0;
-  //offsetZMPx=0.0023;
+  //offsetZMPx=0.0;
+  offsetZMPx=0.015;
   Zup=0.05;
   Tv=0.0;
   //Tv=0.08; //use no toe mode
-  xInit=yInit=0.0;
- 
-  //capture point
+  
+  //capture point init
   cp<<0.0, 0.0;
 
 
@@ -62,10 +61,6 @@ ZmpPlaner::ZmpPlaner()
       
 void ZmpPlaner::setInit(double &xIni, double &yIni)
 {
-  //for old
-  xInit=xIni;
-  yInit=yIni;
-  //for new
   zmpInit<<xIni , yIni;
   cp<<xIni, yIni;
 }
@@ -467,7 +462,7 @@ void ZmpPlaner::calcSwingLegCP( BodyPtr m_robot, FootType FT, Vector3 *p_ref, Ma
       link_b_s= link_b_rear;
       link_b_f= link_b_front;
       pitch_s=-pitch_angle*0.5;
-      pitch_f=pitch_angle;
+      pitch_f=pitch_angle*0.7;
       //pitch=0.0;
       //cout<<"back"<<endl;
     }
@@ -556,8 +551,11 @@ void ZmpPlaner::calcSwingLegCP( BodyPtr m_robot, FootType FT, Vector3 *p_ref, Ma
                                         //0  
       Interplation3(0.0, 0.0, pitch_s,  pitch_s/(Tp)*0.3, Tp, index);
                                 //used to be 0
-      Interplation3(pitch_s,  pitch_s/(Tp)*0.3, pitch_f,  pitch_f/(Tp)*0.1, Tsup-Tp, index);
-      Interplation3(pitch_f,  pitch_f/(Tp)*0.1,  0.0, 0.0, Tp, index);
+      //Interplation3(pitch_s,  pitch_s/(Tp)*0.3, pitch_f,  pitch_f/(Tp)*0.1, Tsup-Tp, index);
+      //Interplation3(pitch_f,  pitch_f/(Tp)*0.1,  0.0, 0.0, Tp, index);
+
+      Interplation3(pitch_s,  pitch_s/(Tp)*0.3, pitch_f,  0.0, Tsup-Tp, index);
+      Interplation3(pitch_f,  0.0,  0.0, 0.0, Tp, index);
     
       /*
       Interplation1(0.0,  0.0, Tdbl-Tp, index);  

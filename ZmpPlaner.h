@@ -105,7 +105,6 @@ class ZmpPlaner {
   std::deque<vector2> rfzmpCopy;
   vector2 rzmpEnd;
 
- 
 
   double disfoot;
   double displaceY;
