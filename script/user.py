@@ -181,7 +181,7 @@ def connectComps():
     rtm.connectPorts(rh.port("lfsensor"), user.port("lfsensor"))
     rtm.connectPorts(rh.port("rhsensor"), user.port("rhsensor"))
     rtm.connectPorts(rh.port("lhsensor"), user.port("lhsensor"))
-
+    rtm.connectPorts(user.port("light"), rh.port("light"))
     if joystick!=None:
         print "connect to gamepad"
         rtm.connectPorts(joystick.port("axes"),user.port("axes"))

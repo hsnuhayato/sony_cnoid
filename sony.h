@@ -113,8 +113,9 @@ class sony  : public hrp2Base
   RTC::TimedBooleanSeq m_buttons;
   RTC::InPort<RTC::TimedBooleanSeq> m_buttonsIn;
   // DataOutPort declaration
-
-
+  RTC::TimedBooleanSeq m_light;
+  RTC::OutPort<RTC::TimedBooleanSeq> m_lightOut;
+ 
   // CORBA Port declaration
   // <rtc-template block="corbaport_declare">
   RTC::CorbaPort m_sonyServicePort;
@@ -171,6 +172,8 @@ class sony  : public hrp2Base
   bool usePivot;
   double cm_offset_x;
   //Eigen::MatrixXd gh;
+  //for joystick
+  bool buttom_accept;
 };
 
 

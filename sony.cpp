@@ -5,7 +5,7 @@
  * $Id$ 
  */
 #include "sony.h"
-std::ofstream ofs("/home/wu/src/HRP3.1x/sony_cnoid/sony.log");
+//std::ofstream ofs("/home/wu/src/HRP3.1x/sony_cnoid/sony.log");
 // Module specification
 // <rtc-template block="module_spec">
 static const char* sony_spec[] =
@@ -30,6 +30,7 @@ sony::sony(RTC::Manager* manager):
   hrp2Base(manager),
   m_axesIn("axes", m_axes),
   m_buttonsIn("buttons", m_buttons),
+  m_lightOut("light", m_light),
   m_sonyServicePort("sonyService")
 
     // </rtc-template>
@@ -49,6 +50,10 @@ RTC::ReturnCode_t sony::onInitialize()
   // Set InPort buffers
   addInPort("axes", m_axesIn);
   addInPort("buttons", m_buttonsIn);
+  //Set OutPort buffers
+  addOutPort("light", m_lightOut);
+  m_light.data.length(1);
+  m_light.data[0]=true;
   //for ps3 controller
   m_axes.data.length(29);
   m_buttons.data.length(17);
@@ -101,6 +106,9 @@ RTC::ReturnCode_t sony::onInitialize()
   
   //Link* TLink=forceSensors[0]->link();
   //Link* TLink=m_robot->link("LLEG_JOINT5");
+  //for joystick
+  buttom_accept=true;
+
   return RTC::RTC_OK;
 }
 
@@ -128,16 +136,27 @@ RTC::ReturnCode_t sony::onExecute(RTC::UniqueId ec_id)
     velobj(5)=m_axes.data[2]*-3;
 
     //wireless
-   if(m_axes.data[17]>=0.1)//o button
+   if(m_axes.data[17]>=0.1)//o buttom
       step=1;
-    else if(m_axes.data[18]>=0.1)//x burron
+    else if(m_axes.data[18]>=0.1)//x burrom
       step=0;
    //head
    m_robot->link("HEAD_JOINT1")->q()-=0.2*m_axes.data[8]*M_PI/180;
    m_robot->link("HEAD_JOINT1")->q()+=0.2*m_axes.data[10]*M_PI/180;
    m_robot->link("HEAD_JOINT0")->q()-=0.2*m_axes.data[9]*M_PI/180;
    m_robot->link("HEAD_JOINT0")->q()+=0.2*m_axes.data[11]*M_PI/180;
-    /*
+   //light
+   if(buttom_accept){
+     if(m_axes.data[16]>=0.1){//^ buttom
+       m_light.data[0]=!m_light.data[0];
+       buttom_accept=false;
+     }
+   }
+   else{
+     if(m_axes.data[16]==0)
+       buttom_accept=true;
+   }
+   /*
     double velsqr=pow(velobj(0),2) + pow(velobj(1),2);
     if( velsqr > 64){
       velobj(0)= velobj(0)* 8/ sqrt(velsqr);
@@ -201,6 +220,7 @@ RTC::ReturnCode_t sony::onExecute(RTC::UniqueId ec_id)
     m_contactStatesOut.write();
     m_basePosOut.write();
     m_baseRpyOut.write();
+    m_lightOut.write();
   }//playflag
 
   //_/_/_/_/_/_/_/_/_test/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/  
@@ -212,8 +232,8 @@ RTC::ReturnCode_t sony::onExecute(RTC::UniqueId ec_id)
   }
     
  
-  ofs<<m_rfsensor.data[2]-m_lfsensor.data[2]<<endl;
-   
+  //ofs<<m_rfsensor.data[2]-m_lfsensor.data[2]<<endl;
+ 
  
   return RTC::RTC_OK;
 }
