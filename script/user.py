@@ -182,6 +182,7 @@ def connectComps():
     rtm.connectPorts(rh.port("rhsensor"), user.port("rhsensor"))
     rtm.connectPorts(rh.port("lhsensor"), user.port("lhsensor"))
     rtm.connectPorts(user.port("light"), rh.port("light"))
+
     if joystick!=None:
         print "connect to gamepad"
         rtm.connectPorts(joystick.port("axes"),user.port("axes"))
@@ -201,6 +202,7 @@ def connectComps():
         rtm.connectPorts(user.port("basePosOut"), st.port("basePosIn"))
         rtm.connectPorts(user.port("baseRpyOut"), st.port("baseRpyIn"))
         rtm.connectPorts(user.port("contactStates"), st.port("contactStates"))
+        rtm.connectPorts(user.port("localEEpos"), st.port("localEEpos"))
         rtm.connectPorts(st.port("q"),  servo.port("qRefIn"))
         rtm.connectPorts(st.port("q"),    user.port("mc"))
 """    

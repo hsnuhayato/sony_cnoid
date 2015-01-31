@@ -115,7 +115,8 @@ class sony  : public hrp2Base
   // DataOutPort declaration
   RTC::TimedBooleanSeq m_light;
   RTC::OutPort<RTC::TimedBooleanSeq> m_lightOut;
- 
+  RTC::TimedDoubleSeq m_localEEpos;
+  RTC::OutPort<RTC::TimedDoubleSeq> m_localEEposOut;
   // CORBA Port declaration
   // <rtc-template block="corbaport_declare">
   RTC::CorbaPort m_sonyServicePort;
@@ -154,6 +155,7 @@ class sony  : public hrp2Base
   Link* object_ref;
   double yawTotal;
   Matrix3 rotRTemp;
+  Vector3 pivot_localposIni;
 
   bool step;
 

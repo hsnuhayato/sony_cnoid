@@ -157,7 +157,6 @@ class hrp2Base  : public RTC::DataFlowComponentBase
   // </rtc-template>
   ZmpPlaner *zmpP;
   PreviewControl *PC;
-  Properties prop;
   BodyPtr m_robot;
   int dof;
   double mass;

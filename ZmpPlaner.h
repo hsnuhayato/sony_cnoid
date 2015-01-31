@@ -13,6 +13,7 @@
 
 //#include "hrpUtil/uBlasCommonTypes.h"
 #include "myfunc.h"
+#include "spline.h"
 #include "wuNewType.h"
 //use preview control operater
 #include "preview_control/PreviewControl.h"

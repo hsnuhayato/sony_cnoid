@@ -161,7 +161,7 @@ pnl.add(obj)
 
 obj = createButton("setPosGain", setPosGainEvent)
 pnl.add(obj)
-inPos=JTextField("8000 0.005",15)
+inPos=JTextField("8000 0.01",15) #70000 0.1
 pnl.add(inPos)
 
 obj = createButton("setRotSwitch", setRotSwitch)

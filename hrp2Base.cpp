@@ -83,8 +83,7 @@ RTC::ReturnCode_t hrp2Base::onInitialize()
   // Bind variables and configuration variable
 
   // </rtc-template>
-  prop=this->getProperties();
-
+  RTC::Properties& prop = getProperties();
   /*  
   RTC::Manager& rtcManager = RTC::Manager::instance();
   std::string nameServer = rtcManager.getConfig()["corba.nameservers"];
@@ -276,7 +275,7 @@ RTC::ReturnCode_t hrp2Base::onRateChanged(RTC::UniqueId ec_id)
 }
 */
 
-/*
+
 extern "C"
 {
  
@@ -289,6 +288,6 @@ extern "C"
   }
   
 };
- */
+ 
 
 

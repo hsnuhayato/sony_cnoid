@@ -31,6 +31,7 @@ sony::sony(RTC::Manager* manager):
   m_axesIn("axes", m_axes),
   m_buttonsIn("buttons", m_buttons),
   m_lightOut("light", m_light),
+  m_localEEposOut("localEEpos",m_localEEpos),
   m_sonyServicePort("sonyService")
 
     // </rtc-template>
@@ -52,8 +53,33 @@ RTC::ReturnCode_t sony::onInitialize()
   addInPort("buttons", m_buttonsIn);
   //Set OutPort buffers
   addOutPort("light", m_lightOut);
+  addOutPort("localEEpos",m_localEEposOut);
+  
   m_light.data.length(1);
   m_light.data[0]=true;
+  m_localEEpos.data.length(6);
+
+  RTC::Properties& prop = getProperties();
+   // setting from conf file
+  // rleg,TARGET_LINK,BASE_LINK,x,y,z,rx,ry,rz,rth #<=pos + rot (axis+angle)
+  coil::vstring end_effectors_str = coil::split(prop["end_effectors"], ",");
+  if (end_effectors_str.size() > 0) {
+    cout<<m_profile.instance_name<<" :load end effect"<<endl;
+    size_t prop_num = 10;
+    size_t num = end_effectors_str.size()/prop_num;
+    int k=0;
+    for (size_t i = 0; i < num; i++){
+      for (size_t j = 0; j < 3; j++){
+        coil::stringTo(m_localEEpos.data[k], end_effectors_str[i*prop_num+3+j].c_str());
+	k++;
+      }
+    }
+    for(int i=0;i<3;i++)
+      pivot_localposIni(i)=m_localEEpos.data[i];
+  }
+  else{cout<<m_profile.instance_name<<" :no end ee"<<endl;}
+  
+ 
   //for ps3 controller
   m_axes.data.length(29);
   m_buttons.data.length(17);
@@ -221,6 +247,7 @@ RTC::ReturnCode_t sony::onExecute(RTC::UniqueId ec_id)
     m_basePosOut.write();
     m_baseRpyOut.write();
     m_lightOut.write();
+    m_localEEposOut.write();
   }//playflag
 
   //_/_/_/_/_/_/_/_/_test/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/  
@@ -490,14 +517,24 @@ void sony::walkingMotion(BodyPtr m_robot, FootType FT, Vector3 &cm_ref, Vector3 
     
     /////////toe mode////////////
     if(usePivot){
+      for(int i=0;i<3;i++){
+	m_localEEpos.data[i]=pivot_localposIni(i);
+	m_localEEpos.data[i+3]=pivot_localposIni(i);
+      }
       Position T;
       T.linear()= Eigen::MatrixXd::Identity(3,3);
       T.translation()=Vector3(zmpP->link_b_deque.at(0));
       if((FT==FSRFsw)||(FT==RFsw)){
 	pt_R->setOffsetPosition(T);
+	for(int i=0;i<3;i++){//right end effect
+	  m_localEEpos.data[i]=T.translation()(i);
+	}
       }
       else if((FT==FSLFsw)||(FT==LFsw)){
 	pt_L->setOffsetPosition(T);
+	for(int i=0;i<3;i++){//left end effect
+	  m_localEEpos.data[i+3]=T.translation()(i);
+	}
       }
       
       R_ref[swingLeg]= zmpP->swLeg_R.at(0) * zmpP->rot_pitch.at(0);
