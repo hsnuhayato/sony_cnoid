@@ -514,7 +514,7 @@ void sony::walkingMotion(BodyPtr m_robot, FootType FT, Vector3 &cm_ref, Vector3 
     R_ref[swingLeg]= zmpP->swLeg_R.at(0);
     //zmpP->calcWaistR(FT,  R_ref); 
     R_ref[WAIST]=zmpP->calcWaistR(FT,  m_robot); 
-    
+   
     /////////toe mode////////////
     if(usePivot){
       for(int i=0;i<3;i++){
