@@ -48,8 +48,8 @@ enum FootType {FSRFsw, FSLFsw, RFsw, LFsw};
 enum{RLEG, LLEG, RARM, LARM, WAIST, LINKNUM};
 enum StepDir {front,back};
 
-#define Kgain_path "/home/grxuser/users/wu/hrp2rtc/preview_control/prm/"
-#define canonPace 0.09
+//#define Kgain_path "/home/grxuser/users/wu/hrp2rtc/preview_control/prm/"
+//#define canonPace 0.09
 
 #ifndef deg2rad
 #define deg2rad(x)  (M_PI/180*(x))
