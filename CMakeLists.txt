@@ -36,7 +36,7 @@ include_directories(/usr/local/include)
 include_directories(${CMAKE_MODULE_PATH})
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 #link_directories(${CMAKE_MODULE_PATH})
-#include_directories(${CMAKE_CURRENT_SOURCE_DIR}/preview_control)
+#include_directories(${CMAKE_CURRENT_SOURCE_DIR}/preview_control)#noneed
 ##################
 #########
 ##################
@@ -122,7 +122,7 @@ set(comp_sources ${comp_sources} ${comp_name}Service_impl.cpp ${comp_name}Servic
 set(comp_sources ${comp_sources} hrp2Base.cpp)
 set(comp_sources ${comp_sources} myfunc.cpp)# to be revise tvmet
 set(comp_sources ${comp_sources} ZmpPlaner.cpp)
-set(comp_sources ${comp_sources} ${CMAKE_CURRENT_SOURCE_DIR}/preview_control/PreviewControl.cpp)
+#set(comp_sources ${comp_sources} ${CMAKE_CURRENT_SOURCE_DIR}/preview_control/PreviewControl.cpp)
 #set(comp_sources ${comp_sources} NMSclassQ.cpp)
 
 

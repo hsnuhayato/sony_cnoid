@@ -101,7 +101,6 @@ RTC::ReturnCode_t sony::onInitialize()
   //pini
   playflag=0;
   stopflag=1;
-  count=0;
   step_counter=0;
   cm_offset_x=0.015;
   absZMP<<cm_offset_x, 0.0, 0.0;
@@ -208,18 +207,7 @@ RTC::ReturnCode_t sony::onExecute(RTC::UniqueId ec_id)
     object_operate();   
     prmGenerator( flagcalczmp);//stopflag off here
 
-    walkingMotion(m_robot, FT, cm_ref, absZMP, p_Init, p_ref, R_ref, rfzmp, PC, zmpP, count);
-
-    /*
-    if(stopflag){//waiting
-      waitingMotion(cm_ref, PC);
-    }
-    else{//walking
-      walkingMotion(m_robot, FT, cm_ref, absZMP, p_Init, p_ref, R_ref, rfzmp, PC, zmpP, count);
-      //toe mode
-      //walkingMotion(m_robot, FT, cm_ref, absZMP, p_Init, p_ref_toe, R_ref_toe, rfzmp, PC, zmpP, count);
-    }    
-    */
+    walkingMotion(m_robot, FT, cm_ref, absZMP, p_Init, p_ref, R_ref, rfzmp, zmpP);
 
     calcWholeIVK(); //write in refq
     zmpHandler();
@@ -237,7 +225,7 @@ RTC::ReturnCode_t sony::onExecute(RTC::UniqueId ec_id)
     
 
     //for next step. set p_ref to p_Init
-    if(ChangeSupLeg(m_robot, FT, count, zmpP, PC, stopflag, CommandIn, p_ref, p_Init, R_ref, R_Init))
+    if(ChangeSupLeg(m_robot, FT,  zmpP, stopflag, CommandIn, p_ref, p_Init, R_ref, R_Init))
       flagcalczmp=1;
 
     
@@ -349,10 +337,10 @@ inline void sony::prmGenerator(bool &calczmpflag)//this is calcrzmp flag
   //////////////usually obmit when keep walking//////////////////
   //start to walk or not A
   //waiting
-  if( stopflag && PC->CoM2Stop.empty() ){
+  if( stopflag ){
     if(walkJudge(m_robot, FT, RLEG_ref_p, LLEG_ref_p, LEG_ref_R) || step){
       CommandIn=0;//start to walk
-      start2walk(m_robot, zmpP, PC, stopflag, cm_ref);//stopflag off
+      start2walk(m_robot, zmpP, stopflag, cm_ref);//stopflag off
       cerr<<"start2walk "<<endl;
       //calc trajectory 
       prm2Planzmp(FT, p_ref, R_ref, RLEG_ref_p, LLEG_ref_p, LEG_ref_R, rfzmp, zmpP);
@@ -397,25 +385,13 @@ int sony::stepLength(FootType FT, ZmpPlaner *zmpP)
  return stepLength;
 }
 
-void sony::waitingMotion(Vector3 &cm_ref, PreviewControl *PC)
-{
-  //CoM to nutral
-  if(!(PC->CoM2Stop.empty())){
-    cm_ref(0)=PC->CoM2Stop.at(0)(0);
-    cm_ref(1)=PC->CoM2Stop.at(0)(1);
-    PC->CoM2Stop.pop_front();
-  }
-}
 
-void sony::start2walk(BodyPtr m_robot, ZmpPlaner *zmpP, PreviewControl *PC, bool &stopflag, Vector3 cm_ref)
+void sony::start2walk(BodyPtr m_robot, ZmpPlaner *zmpP, bool &stopflag, Vector3 cm_ref)
 {// this is for FSRF or FSLF
   Vector3 rzmpInit;
   NaturalZmp(m_robot, rzmpInit, cm_offset_x);
   zmpP->setInit( rzmpInit(0) , rzmpInit(1) );
   
-  PC->setInitial(cm_ref); 
-  PC->Inituk();
-
   stopflag=0;//comment out when test mode
 }
 
@@ -500,7 +476,7 @@ void sony::prm2Planzmp(FootType FT, Vector3 *p_ref, Matrix3 *R_ref, Vector3 RLEG
   
 }
 
-void sony::walkingMotion(BodyPtr m_robot, FootType FT, Vector3 &cm_ref, Vector3 &absZMP, Vector3 *p_Init, Vector3 *p_ref, Matrix3 *R_ref, std::deque<vector2> &rfzmp, PreviewControl *PC, ZmpPlaner *zmpP, int &count)
+void sony::walkingMotion(BodyPtr m_robot, FootType FT, Vector3 &cm_ref, Vector3 &absZMP, Vector3 *p_Init, Vector3 *p_ref, Matrix3 *R_ref, std::deque<vector2> &rfzmp, ZmpPlaner *zmpP)
 {
   //capture point 
   zmpP->getNextCom(cm_ref);
@@ -554,93 +530,11 @@ void sony::walkingMotion(BodyPtr m_robot, FootType FT, Vector3 &cm_ref, Vector3 
     zmpP->swLeg_R.pop_front();   
   }//empty
 
-  /*
-  //preview control
-  PC->calcInput(rfzmp);//input recalculated
-  PC->calcNextState();
-  cm_ref(0)=PC->cur_state(0,0);
-  cm_ref(1)=PC->cur_state(0,1);
-  PC->update();
-  
-  ///rzmp To st (already in zmphandler?)
-  absZMP[0]=rfzmp.at(0)(0);
-  absZMP[1]=rfzmp.at(0)(1);
-
-  //swingLeg nomal mode
-  int swingLeg=swLeg(FT);
-  p_ref[swingLeg](0)=zmpP->swLegxy.at(count)(0);
-  p_ref[swingLeg](1)=zmpP->swLegxy.at(count)(1);
-  p_ref[swingLeg](2)=p_Init[swingLeg](2)+zmpP->Trajzd.at(count);
-  R_ref[swingLeg]= zmpP->swLeg_R.at(count);
-  zmpP->calcWaistR(FT,  R_ref); 
-  */
-
-
-  /*
-  //toe mode
-  if((FT==FSRFsw)||(FT==RFsw)){
-    pt_R->b =zmpP->link_b_deque.at(count);
-    s2sw_R->calcForwardKinematics();
-  }
-  else if((FT==FSLFsw)||(FT==LFsw)){
-    pt_L->b =zmpP->link_b_deque.at(count);
-    s2sw_L->calcForwardKinematics();
-  }
-  
-  //swingLeg
-  int swingLeg=swLeg(FT);
-  p_ref[swingLeg](0)=zmpP->swLegxy.at(count)[0];
-  p_ref[swingLeg](1)=zmpP->swLegxy.at(count)[1];
-  p_ref[swingLeg](2)=zmpP->Trajzd.at(count);
-  R_ref[swingLeg]= zmpP->swLeg_R.at(count) * zmpP->rot_pitch.at(count);
-  zmpP->calcWaistR(FT, R_ref_toe); 
-  */
-  count++;
+ 
 }
 
-//change supleg buckup
-/*
-bool sony::ChangeSupLeg(BodyPtr m_robot, FootType &FT, int &count, ZmpPlaner *zmpP, PreviewControl *PC, bool &stopflag, int &CommandIn, Vector3 *p_ref, Vector3 *p_Init, Matrix3 *R_ref, Matrix3 *R_Init)
-{
-  bool ifchange=0;
 
-  switch(FT){
-  case FSRFsw:
-    if((count== zmpP->step1Num )&&(!stopflag)){
-    FT=LFsw;
-      IniNewStep(m_robot, FT, count, zmpP, PC, stopflag, CommandIn, p_ref, p_Init, R_ref, R_Init);
-      ifchange=1;
-    }
-    break;
-    
-  case FSLFsw:
-    if((count== zmpP->step1Num)&&(!stopflag)){
-      FT=RFsw;
-      IniNewStep(m_robot, FT, count, zmpP, PC, stopflag, CommandIn, p_ref, p_Init, R_ref, R_Init);
-      ifchange=1;
-    }
-    break;
-    
-  case LFsw:
-    if(count==zmpP->NomalPaceNum){	
-      FT=RFsw; 
-      IniNewStep(m_robot, FT, count, zmpP, PC, stopflag, CommandIn, p_ref, p_Init, R_ref, R_Init);
-      ifchange=1;
-    }
-    break;
-    
-  case RFsw:
-    if(count==zmpP->NomalPaceNum){
-      FT=LFsw;
-      IniNewStep(m_robot, FT, count, zmpP, PC, stopflag, CommandIn, p_ref, p_Init, R_ref, R_Init);
-      ifchange=1;
-    }
-    break;
-  } 
-  return ifchange;
-}
-*/
-bool sony::ChangeSupLeg(BodyPtr m_robot, FootType &FT, int &count, ZmpPlaner *zmpP, PreviewControl *PC, bool &stopflag, int &CommandIn, Vector3 *p_ref, Vector3 *p_Init, Matrix3 *R_ref, Matrix3 *R_Init)
+bool sony::ChangeSupLeg(BodyPtr m_robot, FootType &FT,  ZmpPlaner *zmpP,  bool &stopflag, int &CommandIn, Vector3 *p_ref, Vector3 *p_Init, Matrix3 *R_ref, Matrix3 *R_Init)
 {
   bool ifchange=0;
 
@@ -661,7 +555,7 @@ bool sony::ChangeSupLeg(BodyPtr m_robot, FootType &FT, int &count, ZmpPlaner *zm
     */
 
     //change leg
-    IniNewStep(m_robot, FT, count, zmpP, PC, stopflag, CommandIn, p_ref, p_Init, R_ref, R_Init);
+    IniNewStep(m_robot, FT, zmpP, stopflag, CommandIn, p_ref, p_Init, R_ref, R_Init);
     ifchange=1;
   }
 
@@ -669,15 +563,13 @@ bool sony::ChangeSupLeg(BodyPtr m_robot, FootType &FT, int &count, ZmpPlaner *zm
 }
 
 
-void sony::IniNewStep(BodyPtr m_robot, FootType &FT, int &count, ZmpPlaner *zmpP, PreviewControl *PC, bool &stopflag, int &CommandIn, Vector3 *p_ref, Vector3 *p_Init, Matrix3 *R_ref, Matrix3 *R_Init)
+void sony::IniNewStep(BodyPtr m_robot, FootType &FT,  ZmpPlaner *zmpP,  bool &stopflag, int &CommandIn, Vector3 *p_ref, Vector3 *p_Init, Matrix3 *R_ref, Matrix3 *R_Init)
 { 
   updateInit(p_ref, p_Init, R_ref, R_Init);
-  count=0;
   //ifstop
   if(CommandIn==5){
     stopflag=1;
-    //PC->CoMInpo(m_robot, time2Neutral);//for preview control
-    
+       
     if (FT==RFsw)
       FT=FSRFsw;
     else if(FT==LFsw)
@@ -718,10 +610,7 @@ void sony::start()
   
   //class ini
   zmpP= new ZmpPlaner;
-  PC= new PreviewControl(0.005, cm_ref(2), 9.8);
-  if(!PC->loadGain( kgain,  fgain))
-    std::cerr<<"GainLoadErr"<<std::endl; 
-
+  
   //for path planning/////////////////////////////////////////
   //ini
   p_obj2RLEG = p_Init[RLEG] - object_ref->p(); 

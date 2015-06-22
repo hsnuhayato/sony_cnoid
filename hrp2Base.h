@@ -38,7 +38,7 @@
 #include "myfunc.h"
 #include "VConvert.h"
 #include "ZmpPlaner.h"
-#include "preview_control/PreviewControl.h"
+//#include "preview_control/PreviewControl.h"
 //class
 
 
@@ -156,7 +156,7 @@ class hrp2Base  : public RTC::DataFlowComponentBase
 
   // </rtc-template>
   ZmpPlaner *zmpP;
-  PreviewControl *PC;
+  //PreviewControl *PC;
   BodyPtr m_robot;
   int dof;
   double mass;
