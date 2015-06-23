@@ -466,9 +466,9 @@ void sony::prm2Planzmp(FootType FT, Vector3 *p_ref, Matrix3 *R_ref, Vector3 RLEG
   rfzmp.clear();
   
   if(CommandIn==5)
-    zmpP->PlanCPstop(m_robot, FT, p_ref, R_ref, swLegRef_p, LEG_ref_R, rfzmp);
+    zmpP->PlanCPstop(m_robot, FT, p_ref, R_ref, swLegRef_p, LEG_ref_R, rfzmp, end_link);
   else 
-    zmpP->PlanCP(m_robot, FT, p_ref, R_ref, swLegRef_p, LEG_ref_R, rfzmp, usePivot);
+    zmpP->PlanCP(m_robot, FT, p_ref, R_ref, swLegRef_p, LEG_ref_R, rfzmp, usePivot, end_link);
   
  
   //zmpP->PlanZMPnew(FT, p_ref, R_ref, swLegRef_p, LEG_ref_R, rfzmp);///plan rzmp&swingLeg traje
@@ -490,7 +490,7 @@ void sony::walkingMotion(BodyPtr m_robot, FootType FT, Vector3 &cm_ref, Vector3 
     //p_ref[swingLeg](2)=zmpP->Trajzd.at(0);
     R_ref[swingLeg]= zmpP->swLeg_R.at(0);
     //zmpP->calcWaistR(FT,  R_ref); 
-    R_ref[WAIST]=zmpP->calcWaistR(FT,  m_robot); 
+    R_ref[WAIST]=zmpP->calcWaistR(FT, m_robot, end_link); 
    
     /////////toe mode////////////
     if(usePivot){
