@@ -60,6 +60,8 @@ RTC::ReturnCode_t sony::onInitialize()
   m_localEEpos.data.length(6);
 
   RTC::Properties& prop = getProperties();
+
+  /*
    // setting from conf file
   // rleg,TARGET_LINK,BASE_LINK,x,y,z,rx,ry,rz,rth #<=pos + rot (axis+angle)
   coil::vstring end_effectors_str = coil::split(prop["end_effectors"], ",");
@@ -78,25 +80,23 @@ RTC::ReturnCode_t sony::onInitialize()
       pivot_localposIni(i)=m_localEEpos.data[i];
   }
   else{cout<<m_profile.instance_name<<" :no end ee"<<endl;}
-  
- 
+  */
+  coil::stringTo(halfpos, prop["halfpos"].c_str());
+  //prop["halfpos"]>>halfpos;
+
   //for ps3 controller
   m_axes.data.length(29);
   m_buttons.data.length(17);
   // Set OutPort buffer
-
   // Set service provider to Ports
   m_sonyServicePort.registerProvider("service0", "sonyService", m_service0);
-
   // Set service consumers to Ports
 
   // Set CORBA Service Ports
   addPort(m_sonyServicePort);
-
   //ini base
   hrp2Base::onInitialize();
   coil::stringTo(m_nStep, prop["wutest.nStep"].c_str());
-
   cerr<<"start sony nstep "<<m_nStep<<endl;
   //pini
   playflag=0;
@@ -113,7 +113,7 @@ RTC::ReturnCode_t sony::onInitialize()
   CommandIn=5;
   time2Neutral=0.5;
 
-  usePivot=1;
+  usePivot=0;
   //test paraini
   velobj=Eigen::MatrixXd::Zero(6,1);
   yawTotal=0;
@@ -129,12 +129,11 @@ RTC::ReturnCode_t sony::onInitialize()
   m_baseRpy.data.r=0.0;
   m_baseRpy.data.p=0.0;
   m_baseRpy.data.y=0.0;
-  
+
   //Link* TLink=forceSensors[0]->link();
   //Link* TLink=m_robot->link("LLEG_JOINT5");
   //for joystick
   buttom_accept=true;
-
   return RTC::RTC_OK;
 }
 
@@ -494,23 +493,25 @@ void sony::walkingMotion(BodyPtr m_robot, FootType FT, Vector3 &cm_ref, Vector3 
    
     /////////toe mode////////////
     if(usePivot){
+      /*
       for(int i=0;i<3;i++){
 	m_localEEpos.data[i]=pivot_localposIni(i);
 	m_localEEpos.data[i+3]=pivot_localposIni(i);
       }
+      */
       Position T;
       T.linear()= Eigen::MatrixXd::Identity(3,3);
       T.translation()=Vector3(zmpP->link_b_deque.at(0));
       if((FT==FSRFsw)||(FT==RFsw)){
 	pt_R->setOffsetPosition(T);
 	for(int i=0;i<3;i++){//right end effect
-	  m_localEEpos.data[i]=T.translation()(i);
+	  //m_localEEpos.data[i]=T.translation()(i);
 	}
       }
       else if((FT==FSLFsw)||(FT==LFsw)){
 	pt_L->setOffsetPosition(T);
 	for(int i=0;i<3;i++){//left end effect
-	  m_localEEpos.data[i+3]=T.translation()(i);
+	  //m_localEEpos.data[i+3]=T.translation()(i);
 	}
       }
       
@@ -670,7 +671,7 @@ void sony::start()
   NaturalZmp(m_robot, rzmpInit, cm_offset_x, end_link);
   zmpP->setInit( rzmpInit(0) , rzmpInit(1) );//for cp init
   
-//ooo
+  //ooo
   playflag=1;
   
 }
@@ -684,10 +685,11 @@ void sony::stepping()
 void sony::testMove()
 {
   cout<<"test move"<<endl;
-  vector32 zero;
-  vector32 body_cur;
-  zero=MatrixXd::Zero(32,1);
-  body_cur=MatrixXd::Zero(32,1);
+  //vector32 zero;
+  //zero=MatrixXd::Zero(dof,1);
+  Eigen::MatrixXd zero(Eigen::MatrixXd::Zero(dof,1));
+  body_cur=MatrixXd::Zero(dof,1);
+   
   /*
   //ver1
   body_ref<<0, 0.00332796, -0.482666, 0.859412, -0.370882, -0.00322683,
@@ -711,20 +713,46 @@ void sony::testMove()
             0.698132, -0.122173, 0, -1.50971, -0.122173, 0, 0, 0,
             0.698132,  0.122173, 0, -1.50971,  0.122173, 0, 0, 0;
   */
-	
+
+  /*
   //ver4 cm(0)==0.015
   body_ref<<7.63538e-07, 0.00326758, -0.376392, 0.784674, -0.407696, -0.00325747,
             7.63538e-07, 0.00326758, -0.376392, 0.784674, -0.407696, -0.00325747, 
            0, 0, 0, 0,
            0.698132, -0.122173, 0, -1.50971, -0.122173, 0, 0, 0,
            0.698132,  0.122173, 0, -1.50971,  0.122173, 0, 0, 0;
- 
-  //for(int i=0;i<6;i++){
-  //body_ref(i)=(body_ref(i)+body_ref(i+6))/2;
-    //  body_ref(i+6)=body_ref(i);
-  //}
+  */
+
+  body_ref=MatrixXd::Zero(dof,1);
+  for(int i=0;i<dof;i++)
+    m_mc.data[i]=body_ref(i)=halfpos[i];
   
-  Interplation5(body_cur,  zero,  zero, body_ref,  zero,  zero, 1, bodyDeque);
+  /*
+  m_robot->calcForwardKinematics();
+  setModelPosture(m_robot, m_mc, FT, end_link);
+  RenewModel(m_robot, p_now, R_now, end_link);
+  cm_ref=m_robot->calcCenterOfMass(); 
+ //for expos
+  for(int i=0;i<LINKNUM;i++){
+    p_ref[i]=p_now[i];
+    R_ref[i]=R_now[i];
+  }
+  R_ref[WAIST]=Eigen::MatrixXd::Identity(3,3);
+  //cm_ref(0)+=0.03;
+  cm_ref(0)=m_robot->link(end_link[RLEG])->p()(0)+0.03;
+  if(CalcIVK_biped(m_robot, cm_ref, p_ref, R_ref, FT, end_link)){
+    cout<<"okok"<<endl;
+    for(unsigned int i=0;i<dof;i++){
+      body_ref(i)=m_robot->joint(i)->q();
+      cout<<body_ref(i)<<", ";
+    }
+    cout<<endl;
+  }
+  else
+    cout<<"ivk error"<<endl;
+  */
+  
+  Interplation5(body_cur,  zero,  zero, body_ref,  zero,  zero, 5, bodyDeque);
   
   /*
   //

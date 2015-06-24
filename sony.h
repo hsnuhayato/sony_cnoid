@@ -142,7 +142,7 @@ class sony  : public hrp2Base
   bool flagcalczmp;
   int CommandIn;
   double time2Neutral;
-
+  std::vector<double> halfpos;
   //Path planning
   Vector3 p_obj2RLEG,p_obj2LLEG;
   Matrix3 R_LEG_ini;
@@ -158,9 +158,14 @@ class sony  : public hrp2Base
   bool step;
 
   //test para
-  std::deque<vector32> bodyDeque;
-  vector32 body_cur;
-  vector32 body_ref;
+  //std::deque<vector32> bodyDeque;
+  //vector32 body_cur;
+  //vector32 body_ref;
+
+  MatrixXd body_cur;
+  MatrixXd body_ref;
+  std::deque<MatrixXd> bodyDeque;
+
   Link* pt;
   Link* pt_L;
   Link* pt_R;

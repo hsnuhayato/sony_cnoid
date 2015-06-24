@@ -36,7 +36,8 @@
 //#include <Eigen/Dense>
 //user
 #include "myfunc.h"
-#include "VConvert.h"
+//#include "VConvert.h"
+#include "VectorConvert.h"
 #include "ZmpPlaner.h"
 //#include "preview_control/PreviewControl.h"
 //class
