@@ -153,6 +153,11 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ggdb3 -fno-schedule-insns -fno-schedule
 #  )
 
 #INSTALL(FILES ${comp_name}.so  DESTINATION  "/home/wu/downloads/src/chnoid_dev/choreonoid/build/lib/choreonoid-1.5/rtc")
+<<<<<<< HEAD
 INSTALL(FILES ${comp_name}.so  DESTINATION  "~/choreonoid/build/lib/choreonoid-1.5/rtc")
 
+=======
+
+INSTALL(FILES ${comp_name}.so  DESTINATION  "~/choreonoid/build/lib/choreonoid-1.5/rtc")
+>>>>>>> 8d3b60d78637226278cc12da0731af7b3893c841
 #INSTALL(FILES  ${comp_name}Service.jar  DESTINATION  "/usr/local/share/java")

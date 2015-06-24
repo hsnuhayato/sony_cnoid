@@ -38,17 +38,17 @@ class ZmpPlaner {
  void calcSwingLegXYONew_toe(BodyPtr body, FootType FT, Vector3 *p_ref, Matrix3 *R_ref, vector2 swLegRef_p, Matrix3 object_ref_R);
 
  //void calcWaistR( FootType FT,  Matrix3 *R_ref);
-  Matrix3 calcWaistR( FootType FT,  BodyPtr m_robot);
+ Matrix3 calcWaistR( FootType FT,  BodyPtr m_robot, string *end_link);
   void atan2adjust(double &pre, double &cur);
 
   void StopZMP(FootType FT, std::deque<vector2> &rfzmp, int count);
 
   //capture point/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_
-  void PlanCP( BodyPtr m_robot, FootType FT, Vector3 *p_ref, Matrix3 *R_ref, vector2 swLegRef_p, Matrix3 object_ref_R, std::deque<vector2> &rfzmp, bool usePivot=0);
+  void PlanCP( BodyPtr m_robot, FootType FT, Vector3 *p_ref, Matrix3 *R_ref, vector2 swLegRef_p, Matrix3 object_ref_R, std::deque<vector2> &rfzmp, bool usePivot, string *end_link);
+
+  void PlanCPstop(BodyPtr m_robot ,FootType FT, Vector3 *p_ref, Matrix3 *R_ref, vector2 swLegRef_p, Matrix3 object_ref_R, std::deque<vector2> &rfzmp, string *end_link); 
  
-  void PlanCPstop(BodyPtr m_robot ,FootType FT, Vector3 *p_ref, Matrix3 *R_ref, vector2 swLegRef_p, Matrix3 object_ref_R, std::deque<vector2> &rfzmp); 
- 
- void calcSwingLegCP( BodyPtr m_robot, FootType FT, Vector3 *p_ref, Matrix3 *R_ref, vector2 swLegRef_p, Matrix3 object_ref_R, bool usePivot);
+  void calcSwingLegCP( BodyPtr m_robot, FootType FT, Vector3 *p_ref, Matrix3 *R_ref, vector2 swLegRef_p, Matrix3 object_ref_R, bool usePivot, string *end_link);
   
   void setw(double &wIn);
 

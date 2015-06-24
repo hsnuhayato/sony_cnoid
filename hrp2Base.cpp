@@ -105,7 +105,12 @@ RTC::ReturnCode_t hrp2Base::onInitialize()
   cnoid::BodyLoader bl;
   m_robot=bl.load( prop["model"].c_str());
   std::cout<<"sony dof robot "<<m_robot->numJoints()<<std::endl;
-  m_robot->rootLink()->p()<<0.0, 0.0, 0.705;
+
+  coil::stringTo(m_waist_height, prop["waist_height"].c_str());
+  std::cout<<"sony waist_height "<<m_waist_height<<std::endl;
+  m_robot->rootLink()->p()<<0.0, 0.0, m_waist_height;
+
+
   for(unsigned int i=0;i<dof;i++)
     m_robot->joint(i)->q()=0; 
   //m_robot->rootLink()->p()(0)=0.0;
@@ -116,26 +121,27 @@ RTC::ReturnCode_t hrp2Base::onInitialize()
   std::cout<<"sony centerof mass "<<cm<<endl;//m_robot->mass()
 
   mass=m_robot->mass();
-
   dof = m_robot->numJoints();
+
+  end_link[RLEG]=prop["RLEG_END"];
+  end_link[LLEG]=prop["LLEG_END"];
+  end_link[RARM]=prop["RARM_END"];
+  end_link[LARM]=prop["LARM_END"];
+  end_link[WAIST]=prop["BASE_LINK"];
+  std::cout<<"sony rleg end "<<m_robot->link(end_link[RLEG])->p()<<std::endl;
+  /*
   if( m_robot->numJoints()==32){
     armDof=7;
   }
   else if( m_robot->numJoints()==30){
     armDof=6;
   }  
-
-  prop["kgain"]>>kgain;
-  prop["fgain"]>>fgain;
-  
-  //body set
-  /*
-  for(unsigned int i=0;i<dof;i++)
-    m_robot->joint(i)->q()=0; 
-  m_robot->link("WAIST")->p()<<0, 0, 0.705;
-  m_robot->calcForwardKinematics();
   */
-  RenewModel(m_robot, p_now, R_now);
+  //old for preview control
+  //prop["kgain"]>>kgain;
+  //prop["fgain"]>>fgain;
+ 
+  RenewModel(m_robot, p_now, R_now, end_link);
   updateInit(p_now, p_Init, R_now, R_Init);
   m_robot->calcCenterOfMass();
 

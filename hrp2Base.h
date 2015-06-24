@@ -36,7 +36,8 @@
 //#include <Eigen/Dense>
 //user
 #include "myfunc.h"
-#include "VConvert.h"
+//#include "VConvert.h"
+#include "VectorConvert.h"
 #include "ZmpPlaner.h"
 //#include "preview_control/PreviewControl.h"
 //class
@@ -160,7 +161,8 @@ class hrp2Base  : public RTC::DataFlowComponentBase
   BodyPtr m_robot;
   int dof;
   double mass;
-  int armDof;
+  double m_waist_height;
+  //int armDof;
   Vector3 absZMP,relZMP;
   Vector3 cm_ref;
   std::deque<vector2> rfzmp;
@@ -168,6 +170,8 @@ class hrp2Base  : public RTC::DataFlowComponentBase
   std::vector<double> kgain;
   std::vector<double> fgain;
   FootType FT;
+  
+  string end_link[LINKNUM];
 
   Vector3 p_now[LINKNUM];
   Matrix3 R_now[LINKNUM];

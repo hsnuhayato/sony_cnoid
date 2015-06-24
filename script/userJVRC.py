@@ -31,11 +31,8 @@ def init(robotHost=None):
     print "connecting components"
     connectComps()
 
-    print "activating components"
+    #print "activating components"
     activateComps(rtcList)
-
-    #print "initialize bodyinfo"
-    #bodyinfo.init(rtm.rootnc)
 
     print "initialized successfully"
 
@@ -124,23 +121,17 @@ def stOff():
 def createComps(hostname=socket.gethostname()):
     global ms, user, user_svc, log, rh, servo, joystick, kf, st, st_svc
     ms = rtm.findRTCmanager(hostname)
-    rh = rtm.findRTC("HRP2A")
+    rh = rtm.findRTC("JVRC-1")
     if ms==None:
         print "no ms"
     else:
         user = initRTC("sony", "wpg")
         joystick= initRTC("GamepadRTC","joystick")
         kf= initRTC("KalmanFilter","kf")
-        st= initRTC("Stabilizer","st")
-    #log = initRTC("DataLogger", "log")
-   
-    servo= rtm.findRTC("JojoPDservo0")
+        #st= initRTC("Stabilizer","st")
+      
+    servo= rtm.findRTC("creekPdServo0")
 
-    #user = rtm.findRTC("sony0")
-    #joystick= rtm.findRTC("GamepadRTC0")
-    #kf=rtm.findRTC("KalmanFilter0")
-    #st=rtm.findRTC("Stabilizer0")
-    
     if servo==None:
         print "no servo component"
         return
@@ -157,20 +148,16 @@ def createComps(hostname=socket.gethostname()):
     if user_svc==None:
         print "no svc"
 
-    st_svc = OpenHRP.StabilizerServiceHelper.narrow(st.service("service0"))
-    if st_svc==None:
-        print "no st svc"
+    #st_svc = OpenHRP.StabilizerServiceHelper.narrow(st.service("service0"))
+    #if st_svc==None:
+    #    print "no st svc"
 
     if joystick==None:
         print "no joystick component"
 
-    rtcs=[rh, joystick, kf, user, st]
+    #rtcs=[rh, joystick, kf, user, st]
+    rtcs=[rh, joystick, kf, user]
     
-
-    #user.start()
-    #joystick.start()
-
-    #return [rh, user]
     return rtcs
 
 def connectComps():
@@ -181,7 +168,7 @@ def connectComps():
     rtm.connectPorts(rh.port("lfsensor"), user.port("lfsensor"))
     rtm.connectPorts(rh.port("rhsensor"), user.port("rhsensor"))
     rtm.connectPorts(rh.port("lhsensor"), user.port("lhsensor"))
-    rtm.connectPorts(user.port("light"), rh.port("light"))
+    #rtm.connectPorts(user.port("light"), rh.port("light"))
 
     if joystick!=None:
         print "connect to gamepad"
@@ -192,7 +179,8 @@ def connectComps():
         rtm.connectPorts(rh.port("gsensor"),  kf.port("acc"))
         rtm.connectPorts(rh.port("gyrometer"),  kf.port("rate"))
         
-    if st!= None:
+    #if st!= None:
+    if 0:
         rtm.connectPorts(kf.port("rpy"), st.port("rpy"))
         rtm.connectPorts(rh.port("rfsensor"), st.port("forceR"))
         rtm.connectPorts(rh.port("lfsensor"), st.port("forceL"))
@@ -205,6 +193,9 @@ def connectComps():
         rtm.connectPorts(user.port("localEEpos"), st.port("localEEpos"))
         rtm.connectPorts(st.port("q"),  servo.port("qRef"))
         rtm.connectPorts(st.port("q"),    user.port("mc"))
+
+    rtm.connectPorts(user.port("refq"),  servo.port("qRef"))
+
 """    
 def connectComps():
     rtm.connectPorts(rh.port("q"), [sh.port("currentQIn"),
