@@ -1,5 +1,4 @@
-#!/usr/local/bin/hrpsysjy
-
+#!/home/ogawa/workspace/git/script/hrpsyspy
 import sys,os
 import time
 from java.lang import System

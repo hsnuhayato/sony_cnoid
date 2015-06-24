@@ -38,8 +38,8 @@ def init(robotHost=None):
 
 def activateComps(rtcList):
     rtm.serializeComponents(rtcList)
-    for r in rtcList:
-        r.start()
+    #for r in rtcList:
+    #    r.start()
 
 def initRTC(module, name):
     ms.load(module)
@@ -121,15 +121,14 @@ def stOff():
 def createComps(hostname=socket.gethostname()):
     global ms, user, user_svc, log, rh, servo, joystick, kf, st, st_svc
     ms = rtm.findRTCmanager(hostname)
-    rh = rtm.findRTC("JVRC-1")
+    rh = rtm.findRTC("JVRC")
     if ms==None:
         print "no ms"
     else:
         user = initRTC("sony", "wpg")
         joystick= initRTC("GamepadRTC","joystick")
         kf= initRTC("KalmanFilter","kf")
-        #st= initRTC("Stabilizer","st")
-      
+        st= initRTC("Stabilizer","st")
     servo= rtm.findRTC("creekPdServo0")
 
     if servo==None:
@@ -156,7 +155,8 @@ def createComps(hostname=socket.gethostname()):
         print "no joystick component"
 
     #rtcs=[rh, joystick, kf, user, st]
-    rtcs=[rh, joystick, kf, user]
+    #rtcs=[rh, joystick, kf, user]
+    rtcs=[rh, user]
     
     return rtcs
 
