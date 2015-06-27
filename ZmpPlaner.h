@@ -12,6 +12,7 @@
 //#include "hrpUtil/MatrixSolvers.h"
 
 //#include "hrpUtil/uBlasCommonTypes.h"
+
 #include "myfunc.h"
 #include "spline.h"
 #include "wuNewType.h"
@@ -25,7 +26,6 @@ class ZmpPlaner {
   ~ZmpPlaner();
   void setInit(vector2 &Ini);
   void setInit(double &xIni, double &yIni);
-  
   //void PlanZMPnew(FootType FT, BodyPtr body, vector2 swLegRef_p, Matrix3 object_ref_R, std::deque<vector2> &rfzmp); 
 
   void PlanZMPnew(FootType FT, Vector3 *p_ref, Matrix3 *R_ref, vector2 swLegRef_p, Matrix3 object_ref_R, std::deque<vector2> &rfzmp); 
@@ -51,6 +51,7 @@ class ZmpPlaner {
   void calcSwingLegCP( BodyPtr m_robot, FootType FT, Vector3 *p_ref, Matrix3 *R_ref, vector2 swLegRef_p, Matrix3 object_ref_R, bool usePivot, string *end_link);
   
   void setw(double &wIn);
+  void setZmpOffsetX(double &cm_offset_x);
 
   void getNextCom(Vector3 &cm_ref);
 

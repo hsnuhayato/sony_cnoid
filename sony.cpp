@@ -104,10 +104,11 @@ RTC::ReturnCode_t sony::onInitialize()
   step_counter=0;
   //cm_offset_x=0.015;
   coil::stringTo(cm_offset_x, prop["cm_offset_x"].c_str());
+
   absZMP<<cm_offset_x, 0.0, 0.0;
   relZMP<<cm_offset_x, 0.0, 0.0;
   step=0;
-
+  //cout<<cm_offset_x<<endl;
   flagcalczmp=0;
   FT =FSRFsw;
   CommandIn=5;
@@ -228,6 +229,7 @@ RTC::ReturnCode_t sony::onExecute(RTC::UniqueId ec_id)
     if(ChangeSupLeg(m_robot, FT,  zmpP, stopflag, CommandIn, p_ref, p_Init, R_ref, R_Init))
       flagcalczmp=1;
 
+    //ofs<<m_robot->link(end_link[RLEG])->p()(0)<<endl;
     
     //////////////write///////////////
     rzmp2st();
@@ -666,7 +668,8 @@ void sony::start()
 
   double w=sqrt(9.806/cm_ref(2));
   zmpP->setw(w);
-
+  zmpP->setZmpOffsetX(cm_offset_x);
+ 
   Vector3 rzmpInit;
   NaturalZmp(m_robot, rzmpInit, cm_offset_x, end_link);
   zmpP->setInit( rzmpInit(0) , rzmpInit(1) );//for cp init
@@ -723,11 +726,14 @@ void sony::testMove()
            0.698132,  0.122173, 0, -1.50971,  0.122173, 0, 0, 0;
   */
 
+  
   body_ref=MatrixXd::Zero(dof,1);
   for(int i=0;i<dof;i++)
     m_mc.data[i]=body_ref(i)=halfpos[i];
   
+  
   /*
+  ////////////////////////////////////////
   m_robot->calcForwardKinematics();
   setModelPosture(m_robot, m_mc, FT, end_link);
   RenewModel(m_robot, p_now, R_now, end_link);
@@ -739,21 +745,32 @@ void sony::testMove()
   }
   R_ref[WAIST]=Eigen::MatrixXd::Identity(3,3);
   //cm_ref(0)+=0.03;
-  cm_ref(0)=m_robot->link(end_link[RLEG])->p()(0)+0.03;
+  cm_ref(0)=m_robot->link(end_link[RLEG])->p()(0)+cm_offset_x;
   if(CalcIVK_biped(m_robot, cm_ref, p_ref, R_ref, FT, end_link)){
     cout<<"okok"<<endl;
     for(unsigned int i=0;i<dof;i++){
-      body_ref(i)=m_robot->joint(i)->q();
+        m_mc.data[i]=body_ref(i)=m_robot->joint(i)->q();
       cout<<body_ref(i)<<", ";
     }
     cout<<endl;
   }
   else
     cout<<"ivk error"<<endl;
+
+  m_robot->calcForwardKinematics();
+  setModelPosture(m_robot, m_mc, FT, end_link);
+  RenewModel(m_robot, p_now, R_now, end_link);
+  //for expos
+  for(int i=0;i<LINKNUM;i++){
+    p_ref[i]=p_now[i];
+    R_ref[i]=R_now[i];
+  }
+  R_ref[WAIST]=Eigen::MatrixXd::Identity(3,3);
+  //////////////////////////////////////////////////
   */
-  
-  Interplation5(body_cur,  zero,  zero, body_ref,  zero,  zero, 5, bodyDeque);
-  
+
+  Interplation5(body_cur,  zero,  zero, body_ref,  zero,  zero, 3, bodyDeque);
+
   /*
   //
   //new posture

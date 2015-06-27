@@ -22,6 +22,9 @@ ZmpPlaner::ZmpPlaner()
   //offsetZMPx=0.01371;
   //offsetZMPx=0.0;
   offsetZMPx=0.015;
+  //RTC::Properties& prop = getProperties();
+  //coil::stringTo(offsetZMPx, prop["cm_offset_x"].c_str());
+
   Zup=0.05;
   Tv=0.0;
   //Tv=0.08; //use no toe mode
@@ -64,7 +67,11 @@ void ZmpPlaner::setInit(double &xIni, double &yIni)
   zmpInit<<xIni , yIni;
   cp<<xIni, yIni;
 }
-
+void ZmpPlaner::setZmpOffsetX(double &cm_offset_x)
+{
+  offsetZMPx=cm_offset_x;
+  offsetZMPr(0)=offsetZMPl(0)=offsetZMPx;
+}
 //unused
 void ZmpPlaner::setInit(vector2 &Ini)
 {
