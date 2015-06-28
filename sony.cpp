@@ -949,6 +949,15 @@ void sony::setObjectV(double x, double y, double z, double roll, double pitch, d
 
   velobj<< x,y,z,roll,pitch,yaw;
 }
+
+
+// ogawa
+void sony::stop()
+{
+  playflag=0;
+}
+
+
 //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_//_/_/_/_/_/_/_/_/_/_/_/_/_/_/_  //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_
    
 extern "C"

@@ -103,6 +103,7 @@ class sony  : public hrp2Base
   void testMove();
   void stepping();
   void setObjectV(double x, double y, double z, double roll, double pitch, double yaw);
+  void stop();
 
  protected:
 

@@ -47,10 +47,7 @@ void sonyService_impl::testMove()
 
 void sonyService_impl::stop()
 {
-  // Please insert your code here and remove the following warning pragma
-#ifndef WIN32
-  #warning "Code missing in function <void sonyService_impl::stop()>"
-#endif
+  m_comp->stop();
 }
 
 

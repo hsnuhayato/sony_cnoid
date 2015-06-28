@@ -19,6 +19,7 @@ ZmpPlaner::ZmpPlaner()
 
   //offsetZMPy=0.025;
   offsetZMPy=0.03;
+  //offsetZMPy=0.015;
 
   //offsetZMPx=0.01371;
   //offsetZMPx=0.0;
