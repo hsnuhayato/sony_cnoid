@@ -38,8 +38,8 @@ def init(robotHost=None):
 
 def activateComps(rtcList):
     rtm.serializeComponents(rtcList)
-    #for r in rtcList:
-    #    r.start()
+    for r in rtcList:
+        r.start()
 
 def initRTC(module, name):
     ms.load(module)

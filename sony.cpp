@@ -137,9 +137,18 @@ RTC::ReturnCode_t sony::onInitialize()
   return RTC::RTC_OK;
 }
 
+double tcount(0.0);
+RTC::ReturnCode_t sony::onActivated(RTC::UniqueId ec_id)
+{
+  tcount = 0.0;
+  return RTC::RTC_OK;
+}
 
 RTC::ReturnCode_t sony::onExecute(RTC::UniqueId ec_id)
 {
+  tcount += 0.00025;
+  //std::cout << "sony : time = " << tcount << std::endl;
+
   //if(!m_rhsensorIn.isNew())
   //  return RTC::RTC_OK;
 
@@ -206,9 +215,9 @@ RTC::ReturnCode_t sony::onExecute(RTC::UniqueId ec_id)
   if(playflag){
     object_operate();   
     prmGenerator( flagcalczmp);//stopflag off here
-
+    //std::cout << cm_ref(0) << ",  " << cm_ref(1) << std::endl;
     walkingMotion(m_robot, FT, cm_ref, absZMP, p_Init, p_ref, R_ref, rfzmp, zmpP);
-
+    
     calcWholeIVK(); //write in refq
     zmpHandler();
 
@@ -241,7 +250,7 @@ RTC::ReturnCode_t sony::onExecute(RTC::UniqueId ec_id)
   //_/_/_/_/_/_/_/_/_test/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/  
   if(!bodyDeque.empty()){
     for(int i=0;i<m_robot->numJoints();i++)
-      m_refq.data[i]=bodyDeque.at(0)(i);
+      m_mc.data[i]=m_refq.data[i]=bodyDeque.at(0)(i);
     bodyDeque.pop_front();
     m_refqOut.write();
   }
@@ -469,7 +478,7 @@ void sony::prm2Planzmp(FootType FT, Vector3 *p_ref, Matrix3 *R_ref, Vector3 RLEG
   else 
     zmpP->PlanCP(m_robot, FT, p_ref, R_ref, swLegRef_p, LEG_ref_R, rfzmp, usePivot, end_link);
   
- 
+  
   //zmpP->PlanZMPnew(FT, p_ref, R_ref, swLegRef_p, LEG_ref_R, rfzmp);///plan rzmp&swingLeg traje
   //toe mode
   //zmpP->PlanZMPnew_toe(FT, p_ref, R_ref, swLegRef_p, LEG_ref_R, rfzmp);///plan rzmp&swingLeg traje
@@ -689,7 +698,6 @@ void sony::testMove()
   //zero=MatrixXd::Zero(dof,1);
   Eigen::MatrixXd zero(Eigen::MatrixXd::Zero(dof,1));
   body_cur=MatrixXd::Zero(dof,1);
-   
   /*
   //ver1
   body_ref<<0, 0.00332796, -0.482666, 0.859412, -0.370882, -0.00322683,
@@ -727,12 +735,12 @@ void sony::testMove()
   for(int i=0;i<dof;i++)
     m_mc.data[i]=body_ref(i)=halfpos[i];
   
-  /*
+  
   m_robot->calcForwardKinematics();
   setModelPosture(m_robot, m_mc, FT, end_link);
   RenewModel(m_robot, p_now, R_now, end_link);
   cm_ref=m_robot->calcCenterOfMass(); 
- //for expos
+  //for expos
   for(int i=0;i<LINKNUM;i++){
     p_ref[i]=p_now[i];
     R_ref[i]=R_now[i];
@@ -750,9 +758,10 @@ void sony::testMove()
   }
   else
     cout<<"ivk error"<<endl;
-  */
+  
   
   Interplation5(body_cur,  zero,  zero, body_ref,  zero,  zero, 5, bodyDeque);
+  //Interplation3(body_cur, zero, body_ref, zero, 5, bodyDeque);
   
   /*
   //
