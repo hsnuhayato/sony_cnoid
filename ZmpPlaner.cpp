@@ -17,13 +17,13 @@ ZmpPlaner::ZmpPlaner()
   disfoot=0.19;
   offsetZMPy=0.01;//usually
 
-  //offsetZMPy=0.025;
-  offsetZMPy=0.03;
+  offsetZMPy=0.025;
+  //offsetZMPy=0.03;  // JVRC
   //offsetZMPy=0.015;
 
   //offsetZMPx=0.01371;
-  //offsetZMPx=0.0;
-  offsetZMPx=0.03;
+  offsetZMPx=0.015;
+  //offsetZMPx=0.03;  // JVRC
   Zup=0.05;
   Tv=0.0;
   //Tv=0.08; //use no toe mode

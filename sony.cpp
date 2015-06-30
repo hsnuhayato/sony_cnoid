@@ -237,7 +237,7 @@ RTC::ReturnCode_t sony::onExecute(RTC::UniqueId ec_id)
     if(ChangeSupLeg(m_robot, FT,  zmpP, stopflag, CommandIn, p_ref, p_Init, R_ref, R_Init))
       flagcalczmp=1;
 
-    
+    //std::cout << "base pos = " <<  m_basePos.data.x << ", " << m_basePos.data.y << ", " <<  m_basePos.data.z << std::endl;
     //////////////write///////////////
     rzmp2st();
     m_contactStatesOut.write();
@@ -747,7 +747,8 @@ void sony::testMove()
   }
   R_ref[WAIST]=Eigen::MatrixXd::Identity(3,3);
   //cm_ref(0)+=0.03;
-  cm_ref(0)=m_robot->link(end_link[RLEG])->p()(0)+0.03;
+  cm_ref(0)=m_robot->link(end_link[RLEG])->p()(0)+0.015;
+  //cm_ref(0)=m_robot->link(end_link[RLEG])->p()(0)+0.03;  // JVRC
   if(CalcIVK_biped(m_robot, cm_ref, p_ref, R_ref, FT, end_link)){
     cout<<"okok"<<endl;
     for(unsigned int i=0;i<dof;i++){
