@@ -48,6 +48,21 @@ enum FootType {FSRFsw, FSLFsw, RFsw, LFsw};
 enum{RLEG, LLEG, RARM, LARM, WAIST, LINKNUM};
 enum StepDir {front,back};
 
+struct wpgParam
+{
+  double Tsup;
+  double Tdbl;
+  double dt;
+  double offsetZMPy;
+  double offsetZMPx;
+  double Zup;
+  double Tv;
+  double pitch_angle;
+  std::vector<double> link_b_front;
+  std::vector<double> link_b_rear;
+
+};
+
 //#define Kgain_path "/home/grxuser/users/wu/hrp2rtc/preview_control/prm/"
 //#define canonPace 0.09
 

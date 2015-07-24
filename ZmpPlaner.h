@@ -28,11 +28,11 @@ class ZmpPlaner {
   void setInit(double &xIni, double &yIni);
   //void PlanZMPnew(FootType FT, BodyPtr body, vector2 swLegRef_p, Matrix3 object_ref_R, std::deque<vector2> &rfzmp); 
 
-  void PlanZMPnew(FootType FT, Vector3 *p_ref, Matrix3 *R_ref, vector2 swLegRef_p, Matrix3 object_ref_R, std::deque<vector2> &rfzmp); 
+  //void PlanZMPnew(FootType FT, Vector3 *p_ref, Matrix3 *R_ref, vector2 swLegRef_p, Matrix3 object_ref_R, std::deque<vector2> &rfzmp); 
 
   //void calcSwingLegXYONew(FootType FT, BodyPtr body,  vector2 swLegRef_p, Matrix3 object_ref_R);
   void PlanZMPnew_toe(BodyPtr body, FootType FT, Vector3 *p_ref, Matrix3 *R_ref, vector2 swLegRef_p, Matrix3 object_ref_R, std::deque<vector2> &rfzmp);  
- void PlanZMPnew_toe_dynamic(BodyPtr body, FootType FT, Vector3 *p_ref, Matrix3 *R_ref, vector2 swLegRef_p, Matrix3 object_ref_R, std::deque<vector2> &rfzmp);  
+  //void PlanZMPnew_toe_dynamic(BodyPtr body, FootType FT, Vector3 *p_ref, Matrix3 *R_ref, vector2 swLegRef_p, Matrix3 object_ref_R, std::deque<vector2> &rfzmp);  
 
  void calcSwingLegXYONew(FootType FT, Vector3 *p_ref, Matrix3 *R_ref, vector2 swLegRef_p, Matrix3 object_ref_R);
  void calcSwingLegXYONew_toe(BodyPtr body, FootType FT, Vector3 *p_ref, Matrix3 *R_ref, vector2 swLegRef_p, Matrix3 object_ref_R);
@@ -54,7 +54,7 @@ class ZmpPlaner {
   void setZmpOffsetX(double &cm_offset_x);
 
   void getNextCom(Vector3 &cm_ref);
-
+  void setWpgParam(wpgParam param);
 
 
   //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_
@@ -99,21 +99,9 @@ class ZmpPlaner {
 
  private:
   //new
-  vector2 RLEG2LLEG;
-  vector2 LLEG2RLEG;
   vector2 zmpInit;
   vector2 offsetZMPr;
-  vector2 offsetZMPl;
-  std::deque<vector2> rfzmpCopy;
-  vector2 rzmpEnd;
-
-
-  double disfoot;
-  double displaceY;
-  double displaceNY;
-  double Now;
-  double xInit; 
-  double yInit;
+  vector2 offsetZMPl; 
   double Zup;
   double Tv;
   double dt;
@@ -124,11 +112,7 @@ class ZmpPlaner {
 
   double stopPoint;
   double pitchMax;
-  double prmCache[3];
-  //for calc zmpErr
-  PreviewControl *PC;
-  vector2 limitZmpErr;
-  std::deque<vector2> rfzmpOri;
+
 };
 
 #endif

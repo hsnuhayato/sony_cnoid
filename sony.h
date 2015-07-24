@@ -155,6 +155,7 @@ class sony  : public hrp2Base
   Matrix3 rotRTemp;
   Vector3 pivot_localposIni;
 
+  wpgParam param;
   bool step;
 
   //test para

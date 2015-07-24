@@ -202,7 +202,7 @@ def connectComps():
         rtm.connectPorts(user.port("basePosOut"), st.port("basePosIn"))
         rtm.connectPorts(user.port("baseRpyOut"), st.port("baseRpyIn"))
         rtm.connectPorts(user.port("contactStates"), st.port("contactStates"))
-        rtm.connectPorts(user.port("localEEpos"), st.port("localEEpos"))
+        #rtm.connectPorts(user.port("localEEpos"), st.port("localEEpos"))
         rtm.connectPorts(st.port("q"),  servo.port("qRef"))
         rtm.connectPorts(st.port("q"),    user.port("mc"))
 """    

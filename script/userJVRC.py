@@ -31,7 +31,7 @@ def init(robotHost=None):
     print "connecting components"
     connectComps()
 
-    #print "activating components"
+    print "activating components"
     activateComps(rtcList)
 
     print "initialized successfully"

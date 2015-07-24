@@ -114,7 +114,19 @@ RTC::ReturnCode_t sony::onInitialize()
   CommandIn=5;
   time2Neutral=0.5;
 
-  usePivot=0;
+  //wpgParam
+  coil::stringTo(param.Tsup, prop["Tsup"].c_str());
+  coil::stringTo(param.Tdbl, prop["Tdbl"].c_str());
+  coil::stringTo(param.offsetZMPy, prop["offsetZMPy"].c_str());
+  coil::stringTo(param.offsetZMPx, prop["offsetZMPx"].c_str());
+  coil::stringTo(param.Zup, prop["Zup"].c_str());
+  coil::stringTo(param.Tv, prop["Tv"].c_str());
+  coil::stringTo(param.pitch_angle, prop["pitch_angle"].c_str());
+  coil::stringTo(param.link_b_front, prop["link_b_front"].c_str());
+  coil::stringTo(param.link_b_rear, prop["link_b_rear"].c_str());
+  coil::stringTo(param.dt, prop["wpg.dt"].c_str());
+
+  usePivot=1;
   //test paraini
   velobj=Eigen::MatrixXd::Zero(6,1);
   yawTotal=0;
@@ -613,7 +625,8 @@ void sony::start()
   object_ref->p()= (p_Init[RLEG] +  p_Init[RLEG] )/2;
   
   //class ini
-  zmpP= new ZmpPlaner;
+  zmpP= new ZmpPlaner();
+  zmpP->setWpgParam(param);
   
   //for path planning/////////////////////////////////////////
   //ini
@@ -626,7 +639,10 @@ void sony::start()
     Position T;
     T.linear()= Eigen::MatrixXd::Identity(3,3);
     //foot cm offset
-    T.translation()=Vector3(cm_offset_x, 0.0, -0.105);
+    double ankle_height;
+    RTC::Properties& prop = getProperties();
+    coil::stringTo(ankle_height, prop["ankle_height"].c_str());
+    T.translation()=Vector3(cm_offset_x, 0.0, -ankle_height);
     pt_R->setOffsetPosition(T);
     pt_L->setOffsetPosition(T);
     pt_R->setName("pivot_R");

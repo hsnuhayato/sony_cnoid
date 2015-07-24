@@ -9,59 +9,68 @@
 
 ZmpPlaner::ZmpPlaner()
 {
+  /*
   Tsup=0.7;
   Tdbl=0.1;//for preview
   //Tdbl is set in calcSwingLegCP no necessery set here
 
   dt=0.005;
-  disfoot=0.19;
   offsetZMPy=0.01;//usually
-
   offsetZMPy=0.025;
-
-  //offsetZMPx=0.01371;
-  //offsetZMPx=0.0;
   offsetZMPx=0.015;
-  //RTC::Properties& prop = getProperties();
-  //coil::stringTo(offsetZMPx, prop["cm_offset_x"].c_str());
-
   Zup=0.05;
   Tv=0.0;
   //Tv=0.08; //use no toe mode
-  
+   //pivot
+  pitch_angle=10*M_PI/180;
+  //Tp=Tdbl/4;
+  Tp=Tdbl;
+  link_b_front<< 0.13, 0.0, -0.105;
+  link_b_rear<< -0.1, 0.0, -0.105;
+  */
+
   //capture point init
   cp<<0.0, 0.0;
 
 
   std::cout<<"zmpplaner "<<std::endl;
   stopOper=1;
+
   
-  limitZmpErr(0)=0.08;
-  limitZmpErr(1)=0.06;
+}
+ 
+void ZmpPlaner::setWpgParam(wpgParam param)
+{
+  Tsup=param.Tsup;
+  Tp=Tdbl=param.Tdbl;
+  dt=param.dt;
+  offsetZMPy=param.offsetZMPy;
+  offsetZMPx=param.offsetZMPx;
+  Zup=param.Zup;
+  Tv=param.Tv;
+  pitch_angle=param.pitch_angle*M_PI/180;
+  link_b_front<<param.link_b_front[0],param.link_b_front[1],param.link_b_front[2];
+  link_b_rear<<param.link_b_rear[0],param.link_b_rear[1],param.link_b_rear[2];
+
+
   //new
-  RLEG2LLEG<< 0.0,0.19;
-  LLEG2RLEG<< 0.0,-0.19;
   offsetZMPr(0)=offsetZMPl(0)=offsetZMPx;
   offsetZMPr(1)= offsetZMPy;
   offsetZMPl(1)=-offsetZMPy;
   ///
   TsupNum=(int)(Tsup/dt+NEAR0);
   TdblNum=(int)(Tdbl/dt+NEAR0);
-  
   step1Num=(int)(1.5*TsupNum+7*0.25*TdblNum+NEAR0);
   NomalPaceNum=(int)(TsupNum+0.5*TdblNum+NEAR0);
 
-  //pivot
-  pitch_angle=10*M_PI/180;
-  //Tp=Tdbl/4;
-  Tp=Tdbl;
-  
-  link_b_front<< 0.13, 0.0, -0.105;
-  link_b_rear<< -0.1, 0.0, -0.105;
+  /*
+  cout<<Tsup<<" "<<Tdbl<<" "<<offsetZMPy<<" "<<offsetZMPx<<" "<<Zup<<" "<<Tv<<" "<<pitch_angle<<endl;
+  cout<<link_b_front<<endl;
+  cout<<link_b_rear<<endl;
+  */
 
-   rzmpEnd<<0.0,0.0;
 }
-      
+     
 void ZmpPlaner::setInit(double &xIni, double &yIni)
 {
   zmpInit<<xIni , yIni;
@@ -286,6 +295,7 @@ void ZmpPlaner::getNextCom(Vector3 &cm_ref)
 }
 
 //////
+/*
 void ZmpPlaner::PlanZMPnew(FootType FT, Vector3 *p_ref, Matrix3 *R_ref, vector2 swLegRef_p, Matrix3 object_ref_R, std::deque<vector2> &rfzmp)
 {      
   matrix22 swLegRef_R;      //yow only already okla
@@ -361,15 +371,15 @@ void ZmpPlaner::PlanZMPnew(FootType FT, Vector3 *p_ref, Matrix3 *R_ref, vector2 
   //rfzmpOri= std::deque<vector2> (rfzmp);
  
  
-  /*
-  std::deque<vector2>::iterator itr = rfzmp.begin();  
-  for( itr = rfzmp.begin(); itr != rfzmp.end(); itr++ ){
-    ofszmp<<(*(itr))[0]<<" "<<(*(itr))[1]<<endl;
-  }
-  ofszmp<<'\n'<<std::endl;
-  */
+  
+  //std::deque<vector2>::iterator itr = rfzmp.begin();  
+  //for( itr = rfzmp.begin(); itr != rfzmp.end(); itr++ ){
+  //  ofszmp<<(*(itr))[0]<<" "<<(*(itr))[1]<<endl;
+  // }
+  //ofszmp<<'\n'<<std::endl;
+  
 }
-
+*/
 /*
 void ZmpPlaner::calcWaistR( FootType FT,  Matrix3 *R_ref)
 {
