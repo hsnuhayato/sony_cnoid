@@ -88,7 +88,8 @@ class ZmpPlaner {
   int beforeUpNum;
   double Tsup;
   double Tdbl;
-  
+  double ankle_height;
+
   //for capture point
   std::deque<vector2> cp_deque;
   vector2 cp;//last cp of one step

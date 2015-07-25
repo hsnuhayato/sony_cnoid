@@ -51,7 +51,7 @@ void ZmpPlaner::setWpgParam(wpgParam param)
   pitch_angle=param.pitch_angle*M_PI/180;
   link_b_front<<param.link_b_front[0],param.link_b_front[1],param.link_b_front[2];
   link_b_rear<<param.link_b_rear[0],param.link_b_rear[1],param.link_b_rear[2];
-
+  ankle_height=param.ankle_height;
 
   //new
   offsetZMPr(0)=offsetZMPl(0)=offsetZMPx;
@@ -522,8 +522,9 @@ void ZmpPlaner::calcSwingLegCP( BodyPtr m_robot, FootType FT, Vector3 *p_ref, Ma
     }
     else{
       Tdbl=Tp=0.05;
-      link_b_s<<0.015, 0.0, -0.105;
-      link_b_f<<0.015, 0.0, -0.105;
+      link_b_s<<offsetZMPx, 0.0, -ankle_height;
+      link_b_f<<offsetZMPx, 0.0, -ankle_height;
+
       pitch_s=pitch_f=0.0;
       //cout<<"same"<<endl;
     }

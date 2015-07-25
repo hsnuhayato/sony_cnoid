@@ -172,6 +172,7 @@ class hrp2Base  : public RTC::DataFlowComponentBase
   FootType FT;
   
   string end_link[LINKNUM];
+  string HEAD_P,HEAD_Y;
 
   Vector3 p_now[LINKNUM];
   Matrix3 R_now[LINKNUM];

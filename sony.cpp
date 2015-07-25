@@ -125,6 +125,7 @@ RTC::ReturnCode_t sony::onInitialize()
   coil::stringTo(param.link_b_front, prop["link_b_front"].c_str());
   coil::stringTo(param.link_b_rear, prop["link_b_rear"].c_str());
   coil::stringTo(param.dt, prop["wpg.dt"].c_str());
+  coil::stringTo(param.ankle_height, prop["ankle_height"].c_str());
 
   usePivot=1;
   //test paraini
@@ -179,10 +180,10 @@ RTC::ReturnCode_t sony::onExecute(RTC::UniqueId ec_id)
     else if(m_axes.data[18]>=0.1)//x burrom
       step=0;
    //head
-   m_robot->link("HEAD_JOINT1")->q()-=0.2*m_axes.data[8]*M_PI/180;
-   m_robot->link("HEAD_JOINT1")->q()+=0.2*m_axes.data[10]*M_PI/180;
-   m_robot->link("HEAD_JOINT0")->q()-=0.2*m_axes.data[9]*M_PI/180;
-   m_robot->link("HEAD_JOINT0")->q()+=0.2*m_axes.data[11]*M_PI/180;
+   m_robot->link(HEAD_P)->q()-=0.2*m_axes.data[8]*M_PI/180;
+   m_robot->link(HEAD_P)->q()+=0.2*m_axes.data[10]*M_PI/180;
+   m_robot->link(HEAD_Y)->q()-=0.2*m_axes.data[9]*M_PI/180;
+   m_robot->link(HEAD_Y)->q()+=0.2*m_axes.data[11]*M_PI/180;
    //light
    if(buttom_accept){
      if(m_axes.data[16]>=0.1){//^ buttom
@@ -518,15 +519,15 @@ void sony::walkingMotion(BodyPtr m_robot, FootType FT, Vector3 &cm_ref, Vector3 
       T.translation()=Vector3(zmpP->link_b_deque.at(0));
       if((FT==FSRFsw)||(FT==RFsw)){
 	pt_R->setOffsetPosition(T);
-	for(int i=0;i<3;i++){//right end effect
-	  //m_localEEpos.data[i]=T.translation()(i);
-	}
+	
+	//for(int i=0;i<3;i++)//right end effect
+	//m_localEEpos.data[i]=T.translation()(i);
+	
       }
       else if((FT==FSLFsw)||(FT==LFsw)){
 	pt_L->setOffsetPosition(T);
-	for(int i=0;i<3;i++){//left end effect
-	  //m_localEEpos.data[i+3]=T.translation()(i);
-	}
+	//for(int i=0;i<3;i++)//left end effect
+	//m_localEEpos.data[i+3]=T.translation()(i);
       }
       
       R_ref[swingLeg]= zmpP->swLeg_R.at(0) * zmpP->rot_pitch.at(0);

@@ -60,7 +60,7 @@ struct wpgParam
   double pitch_angle;
   std::vector<double> link_b_front;
   std::vector<double> link_b_rear;
-
+  double ankle_height;
 };
 
 //#define Kgain_path "/home/grxuser/users/wu/hrp2rtc/preview_control/prm/"

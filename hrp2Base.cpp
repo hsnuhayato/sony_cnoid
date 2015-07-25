@@ -128,6 +128,8 @@ RTC::ReturnCode_t hrp2Base::onInitialize()
   end_link[RARM]=prop["RARM_END"];
   end_link[LARM]=prop["LARM_END"];
   end_link[WAIST]=prop["BASE_LINK"];
+  HEAD_P=prop["HEAD_P"];
+  HEAD_Y=prop["HEAD_Y"];
   std::cout<<"sony rleg end "<<m_robot->link(end_link[RLEG])->p()<<std::endl;
   /*
   if( m_robot->numJoints()==32){
