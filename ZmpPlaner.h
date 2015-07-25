@@ -88,6 +88,7 @@ class ZmpPlaner {
   int beforeUpNum;
   double Tsup;
   double Tdbl;
+  double Tdbl_in;
   double ankle_height;
 
   //for capture point
