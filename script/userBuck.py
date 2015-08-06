@@ -1,4 +1,3 @@
-#!/opt/grx/bin/hrpsyspy
 import os
 
 import sys
@@ -10,9 +9,14 @@ import java.lang.System
 
 import rtm
 import waitInput
-import bodyinfo
+#import bodyinfo
 import OpenHRP
-from OpenHRP.RobotHardwareServicePackage import SwitchStatus
+#from OpenHRP.RobotHardwareServicePackage import SwitchStatus
+
+global posswitch,rotswitch,attswitch
+posswitch=1
+rotswitch=1
+attswitch=1
 
 def init(robotHost=None):
     if robotHost != None:
@@ -30,20 +34,22 @@ def init(robotHost=None):
     print "activating components"
     activateComps(rtcList)
 
-    print "initialize bodyinfo"
-    bodyinfo.init(rtm.rootnc)
+    #print "initialize bodyinfo"
+    #bodyinfo.init(rtm.rootnc)
 
     print "initialized successfully"
 
 def activateComps(rtcList):
     rtm.serializeComponents(rtcList)
-    for r in rtcList:
-        r.start()
+    #for r in rtcList:
+    #    r.start()
 
 def initRTC(module, name):
     ms.load(module)
     return ms.create(module, name)
 
+
+"""
 def goActual():
     sh_svc.goActual()
 
@@ -57,6 +63,7 @@ def setJointAnglesDeg(pose, tm, wait=True):
     if wait:
         seq_svc.waitInterpolation()
 
+
 def goInitial(tm=bodyinfo.timeToInitialPose):
     if isServoOn(): 
       putRobotUp()
@@ -67,6 +74,7 @@ def goInitial(tm=bodyinfo.timeToInitialPose):
 
 def loadPattern(basename, tm=3.0):
     seq_svc.loadPattern(basename, tm)
+
 
 def goHalfSitting(tm=bodyinfo.timeToHalfsitPose, wait=True):
     if isServoOn():
@@ -101,11 +109,12 @@ def exPos(tm=1.0, wait=True):
         print "setZmp() failed"
     if wait==True:
         seq_svc.waitInterpolation()
-    stOn()
-
+    #stOn()
+"""
 
 def stOn():
     #st.setProperty("isEnabled", "1")
+    #st_svc.startStabilizer()
     print "no comment"
 
 def stOff():
@@ -113,53 +122,90 @@ def stOff():
     print "no comment"   
 
 def createComps(hostname=socket.gethostname()):
-    global ms, adm_svc, rh, rh_svc, seq, seq_svc, sh, sh_svc, servo, st, st_svc, kf, log, simulation_mode
-    global user, user_svc, sensor
+    global ms, user, user_svc, log, rh, servo, joystick, kf, st, st_svc
     ms = rtm.findRTCmanager(hostname)
-    rh = rtm.findRTC("RobotHardware0")
-    if rh != None:
-        simulation_mode = 0
-        rh_svc = OpenHRP.RobotHardwareServiceHelper.narrow(rh.service("service0"))
-        servo = rh
-        adm = rtm.findRTC("SystemAdmin0")
-        if adm != None:
-          adm.start()
-          adm_svc = OpenHRP.SystemAdminServiceHelper.narrow(adm.service("service0"))
+    rh = rtm.findRTC("HRP2A")
+    if ms==None:
+        print "no ms"
     else:
-        simulation_mode = 1
-        rh = rtm.findRTC(bodyinfo.modelName+"Controller_A(Robot)0")
-        servo = rtm.findRTC("JojoPDservo_A")
-    seq = initRTC("SequencePlayer", "seq_A")
-    seq_svc = OpenHRP.SequencePlayerServiceHelper.narrow(seq.service("service0"))
-    sh  = initRTC("StateHolder", "StateHolder_A")
-    sh_svc = OpenHRP.StateHolderServiceHelper.narrow(sh.service("service0"))
-
-    #kf  = initRTC("KalmanFilter", "kf_A")
-    kf  = initRTC("StateEstimator", "kf_A")
+        user = initRTC("sony", "wpg")
+        joystick= initRTC("GamepadRTC","joystick")
+        kf= initRTC("KalmanFilter","kf")
+        st= initRTC("Stabilizer","st")
+    #log = initRTC("DataLogger", "log")
    
-    #st  = initRTC("Stabilizer", "st_A")
-    st  = initRTC("wuSt", "st_A")
-    #st.setConfiguration(bodyinfo.hstConfig)
-    if st==None:
-        print "no st"
-        return
-    st_svc = OpenHRP.wuStServiceHelper.narrow(st.service("service0"))
-    
-    log = initRTC("DataLogger", "log_A")
+    servo= rtm.findRTC("JojoPDservo0")
 
-    user = initRTC("sony", "user_A")
+    #user = rtm.findRTC("sony0")
+    #joystick= rtm.findRTC("GamepadRTC0")
+    #kf=rtm.findRTC("KalmanFilter0")
+    #st=rtm.findRTC("Stabilizer0")
+    
+    if servo==None:
+        print "no servo component"
+        return
+
+    if rh==None:
+        print "no robot component"
+        return
 
     if user==None:
-        print "no component"
+        print "no user component"
         return
+
     user_svc = OpenHRP.sonyServiceHelper.narrow(user.service("service0"))
+    if user_svc==None:
+        print "no svc"
+
+    st_svc = OpenHRP.StabilizerServiceHelper.narrow(st.service("service0"))
+    if st_svc==None:
+        print "no st svc"
+
+    if joystick==None:
+        print "no joystick component"
+
+    rtcs=[rh, joystick, kf, user, st]
     
-    if simulation_mode:
-        sensor = rtm.findRTC(bodyinfo.modelName+"Controller_A(Robot)0")
-      
-    return [rh, seq, user, kf,  sh, st, log]
-    
-    
+
+    #user.start()
+    #joystick.start()
+
+    #return [rh, user]
+    return rtcs
+
+def connectComps():
+    #rtm.connectPorts(user.port("refq"),    servo.port("qRefIn"))
+    #rtm.connectPorts(user.port("refq"),    user.port("mc"))#tempepory
+    #rtm.connectPorts(rh.port("q"),    user.port("mc"))#tempepory
+    rtm.connectPorts(rh.port("rfsensor"), user.port("rfsensor"))
+    rtm.connectPorts(rh.port("lfsensor"), user.port("lfsensor"))
+    rtm.connectPorts(rh.port("rhsensor"), user.port("rhsensor"))
+    rtm.connectPorts(rh.port("lhsensor"), user.port("lhsensor"))
+    rtm.connectPorts(user.port("light"), rh.port("light"))
+
+    if joystick!=None:
+        print "connect to gamepad"
+        rtm.connectPorts(joystick.port("axes"),user.port("axes"))
+        rtm.connectPorts(joystick.port("buttons"),user.port("buttons"))
+
+    if kf != None:
+        rtm.connectPorts(rh.port("gsensor"),  kf.port("acc"))
+        rtm.connectPorts(rh.port("gyrometer"),  kf.port("rate"))
+        
+    if st!= None:
+        rtm.connectPorts(kf.port("rpy"), st.port("rpy"))
+        rtm.connectPorts(rh.port("rfsensor"), st.port("forceR"))
+        rtm.connectPorts(rh.port("lfsensor"), st.port("forceL"))
+        rtm.connectPorts(rh.port("q"), st.port("qCurrent"))
+        rtm.connectPorts(user.port("refq"), st.port("qRef"))
+        rtm.connectPorts(user.port("rzmp"), st.port("zmpRef"))
+        rtm.connectPorts(user.port("basePosOut"), st.port("basePosIn"))
+        rtm.connectPorts(user.port("baseRpyOut"), st.port("baseRpyIn"))
+        rtm.connectPorts(user.port("contactStates"), st.port("contactStates"))
+        rtm.connectPorts(user.port("localEEpos"), st.port("localEEpos"))
+        rtm.connectPorts(st.port("q"),  servo.port("qRef"))
+        rtm.connectPorts(st.port("q"),    user.port("mc"))
+"""    
 def connectComps():
     rtm.connectPorts(rh.port("q"), [sh.port("currentQIn"),
                                 st.port("q")])
@@ -177,7 +223,8 @@ def connectComps():
     #
     rtm.connectPorts(kf.port("rpy"), st.port("rpy"))
     #
-    rtm.connectPorts(seq.port("qRef"),    sh.port("qIn"))
+    #rtm.connectPorts(seq.port("qRef"),    sh.port("qIn"))
+    rtm.connectPorts(seq.port("qRef"),    st.port("qRefIn"))#new
     rtm.connectPorts(seq.port("qRef"),    st.port("qRefIn"))
     rtm.connectPorts(seq.port("basePos"), sh.port("basePosIn"))
     rtm.connectPorts(seq.port("baseRpy"), sh.port("baseRpyIn"))
@@ -185,8 +232,8 @@ def connectComps():
     #rtm.connectPorts(seq.port("zmpRef"),  st.port("zmpRef"))
     
     #origin
-    rtm.connectPorts(sh.port("qOut"),       [st.port("qRefIn"),
-                                         seq.port("qInit")])
+    #rtm.connectPorts(sh.port("qOut"),       [st.port("qRefIn"),
+    #                                     seq.port("qInit")])
     rtm.connectPorts(sh.port("qOut"),seq.port("qInit"))
     rtm.connectPorts(sh.port("basePosOut"), [seq.port("basePosInit")])
     #rtm.connectPorts(sh.port("baseRpyOut"), [st.port("rpyRef"),
@@ -207,7 +254,9 @@ def connectComps():
     rtm.connectPorts(rh.port("lfsensor"), user.port("lfsensor"))
     rtm.connectPorts(user.port("rzmp"),  st.port("zmpRef"))
     rtm.connectPorts(rh.port("q"), user.port("q"))
-    rtm.connectPorts(user.port("refq"),    sh.port("qIn"))
+    #rtm.connectPorts(user.port("refq"),    sh.port("qIn"))
+    rtm.connectPorts(user.port("refq"),    st.port("qRefIn"))#new
+
     #rtm.connectPorts(user.port("basePOS"),  sh.port("basePosIn"))
     #rtm.connectPorts(user.port("baseRPY"),  sh.port("baseRpyIn"))
     #rtm.connectPorts(sh.port("basePosOut"), user.port("basePOSInit"))
@@ -451,7 +500,7 @@ def execTestPattern():
     stopStep()
 
     stOff()
-    saveLog("/tmp/%s_steptest_%s"%(bodyinfo.modelName.lower(), time.strftime('%Y%m%d%H%M')))
+    #saveLog("/tmp/%s_steptest_%s"%(bodyinfo.modelName.lower(), time.strftime('%Y%m%d%H%M')))
     servoOff()
 
 def execTestPattern2():
@@ -470,7 +519,7 @@ def execTestPattern2():
 
    
     stOff()
-    saveLog("/tmp/%s_walktest_%s"%(bodyinfo.modelName.lower(), time.strftime('%Y%m%d%H%M')))
+    #saveLog("/tmp/%s_walktest_%s"%(bodyinfo.modelName.lower(), time.strftime('%Y%m%d%H%M')))
     servoOff()
 
 def userTest():
@@ -501,56 +550,141 @@ def userTest():
     # move few axis
     sh_svc.getCommand(comH)
     com = comH.value.jointRefs
-    com[bodyinfo.jointId("HEAD_JOINT0")] =  20 * math.pi/180.0
-    com[bodyinfo.jointId("HEAD_JOINT1")] =  20 * math.pi/180.0
+    #com[bodyinfo.jointId("HEAD_JOINT0")] =  20 * math.pi/180.0
+    #com[bodyinfo.jointId("HEAD_JOINT1")] =  20 * math.pi/180.0
     seq_svc.setJointAngles(com, 2)
     seq_svc.waitInterpolation()
 
     ### <=== edit from here for quick test
 
-    saveLog("/tmp/hrp_testpat_"+time.strftime('%Y%m%d%H%M'))
+    #saveLog("/tmp/hrp_testpat_"+time.strftime('%Y%m%d%H%M'))
+"""
+
+def getSTparameter():
+    stParam =OpenHRP.StabilizerServicePackage.stParamHolder()
+    st_svc.getParameter(stParam)
+    return stParam.value
+    #print stParam.value.eefm_rot_damping_gain
+
+def setRotGain(x):
+    itemlist = x.split()
+    numbers = [ float(item) for item in itemlist ]
+    stParam=getSTparameter()
+    stParam.eefm_rot_damping_gain[0]=numbers[0]
+    stParam.eefm_rot_damping_gain[1]=numbers[1]
+    stParam.eefm_rot_time_const=numbers[2] 
+    st_svc.setParameter(stParam)
+    stParam=getSTparameter()
+    print stParam.eefm_rot_damping_gain
+
+def setPosGain(x):
+    itemlist = x.split()
+    numbers = [ float(item) for item in itemlist ]
+    stParam=getSTparameter()
+    stParam.eefm_pos_damping_gain=numbers[0]
+    stParam.eefm_pos_time_const_support=eefm_pos_time_const_swing=numbers[1] 
+    st_svc.setParameter(stParam)
+    #stParam=getSTparameter()
+    #print stParam.eefm_pos_damping_gain
+
+def setAttGain(x):
+    itemlist = x.split()
+    numbers = [ float(item) for item in itemlist ]
+    stParam=getSTparameter()
+    stParam.eefm_body_attitude_control_gain[0]=numbers[0] #roll
+    stParam.eefm_body_attitude_control_gain[1]=numbers[1] #pitch
+    stParam.eefm_body_attitude_control_time_const[0]=numbers[2]
+    stParam.eefm_body_attitude_control_time_const[1]=numbers[3] 
+    st_svc.setParameter(stParam)
+    #stParam=getSTparameter()
+    #print stParam.eefm_body_attitude_control_gain[0]," ",stParam.eefm_body_attitude_control_gain[1]
+
+def setconstTime(x):
+    itemlist = x.split()
+    numbers = [ float(item) for item in itemlist ]
+    stParam=getSTparameter()
+    stParam.eefm_rot_time_const=numbers[0] 
+    stParam.eefm_pos_time_const_support=eefm_pos_time_const_swing=numbers[0] 
+    stParam.eefm_body_attitude_control_time_const[0]=numbers[1]
+    stParam.eefm_body_attitude_control_time_const[1]=numbers[1] 
+    st_svc.setParameter(stParam)
+   
+def setPosSwitch():
+    global posswitch
+    posswitch=not posswitch
+    #print "pos switch", posswitch
+    stParam=getSTparameter()
+    stParam.eefm_pos_control_switch=posswitch 
+    st_svc.setParameter(stParam)
+
+def setRotSwitch():
+    global rotswitch
+    rotswitch=not rotswitch
+    #print "rot switch", rotswitch
+    stParam=getSTparameter()
+    stParam.eefm_rot_control_switch=rotswitch 
+    st_svc.setParameter(stParam)
+
+def setAttSwitch():
+    global attswitch
+    attswitch=not attswitch
+    #print "att switch", attswitch
+    stParam=getSTparameter()
+    stParam.eefm_att_control_switch=attswitch 
+    st_svc.setParameter(stParam)
+
 ##########
 #grxuer method
 
 def start():
     user_svc.start()
+  
+def stOn():
+    st_svc.startStabilizer()
+
+def stOff():
+    st_svc.stopStabilizer()
 
 def setObjectV(x):
     itemlist = x.split() #import numpy 
     numbers = [ float(item) for item in itemlist ]
-    print "wa= ",numbers[0]+numbers[2]
+    #print "wa= ",numbers[0]+numbers[2]
     user_svc.setObjectV(numbers[0], numbers[1], numbers[2], numbers[3], numbers[4], numbers[5])
 
 def testMove():
     user_svc.testMove()
 
+def stepping():
+    user_svc.stepping()
+
 ##st method
-def st_hogex():
-    st_svc.hogex()
+#def st_hogex():
+#    st_svc.hogex()
+
 
 ###########
 funcList = [
-  "Robot Hardware Setup",
-  checkEncoders,
-  calibSensors,
-  ["Step test", execTestPattern],
-  ["Walk test", execTestPattern2],
-  "OnOff",
-  servoOn,
-  servoOff,
-  stOn,
-  stOff,
-  "ChangePose",
-  goInitial,
-  goHalfSitting,
-  exPos,
-  "etc:",
-  saveLog,
-  reboot,
-  shutdown,
+  #"Robot Hardware Setup",
+  #checkEncoders,
+  #calibSensors,
+  #["Step test", execTestPattern],
+  #["Walk test", execTestPattern2],
+  #"OnOff",
+  #servoOn,
+  #servoOff,
+  #stOn,
+  #stOff,
+  #"ChangePose",
+  #goInitial,
+  #goHalfSitting,
+  #exPos,
+  #"etc:",
+  #saveLog,
+  #reboot,
+  #shutdown,
 #  " ",
 ]
-
+"""
 expert_mode = os.getenv("EXPERT_MODE")
 
 if expert_mode and expert_mode.lower() == 'on':
@@ -569,3 +703,4 @@ if expert_mode and expert_mode.lower() == 'on':
     stOff,
     servoOff,
   ]
+"""

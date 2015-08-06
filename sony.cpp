@@ -104,16 +104,30 @@ RTC::ReturnCode_t sony::onInitialize()
   step_counter=0;
   //cm_offset_x=0.015;
   coil::stringTo(cm_offset_x, prop["cm_offset_x"].c_str());
+
   absZMP<<cm_offset_x, 0.0, 0.0;
   relZMP<<cm_offset_x, 0.0, 0.0;
   step=0;
-
+  //cout<<cm_offset_x<<endl;
   flagcalczmp=0;
   FT =FSRFsw;
   CommandIn=5;
   time2Neutral=0.5;
 
-  usePivot=0;
+  //wpgParam
+  coil::stringTo(param.Tsup, prop["Tsup"].c_str());
+  coil::stringTo(param.Tdbl, prop["Tdbl"].c_str());
+  coil::stringTo(param.offsetZMPy, prop["offsetZMPy"].c_str());
+  coil::stringTo(param.offsetZMPx, prop["offsetZMPx"].c_str());
+  coil::stringTo(param.Zup, prop["Zup"].c_str());
+  coil::stringTo(param.Tv, prop["Tv"].c_str());
+  coil::stringTo(param.pitch_angle, prop["pitch_angle"].c_str());
+  coil::stringTo(param.link_b_front, prop["link_b_front"].c_str());
+  coil::stringTo(param.link_b_rear, prop["link_b_rear"].c_str());
+  coil::stringTo(param.dt, prop["wpg.dt"].c_str());
+  coil::stringTo(param.ankle_height, prop["ankle_height"].c_str());
+
+  usePivot=1;
   //test paraini
   velobj=Eigen::MatrixXd::Zero(6,1);
   yawTotal=0;
@@ -175,10 +189,10 @@ RTC::ReturnCode_t sony::onExecute(RTC::UniqueId ec_id)
     else if(m_axes.data[18]>=0.1)//x burrom
       step=0;
    //head
-   m_robot->link("HEAD_JOINT1")->q()-=0.2*m_axes.data[8]*M_PI/180;
-   m_robot->link("HEAD_JOINT1")->q()+=0.2*m_axes.data[10]*M_PI/180;
-   m_robot->link("HEAD_JOINT0")->q()-=0.2*m_axes.data[9]*M_PI/180;
-   m_robot->link("HEAD_JOINT0")->q()+=0.2*m_axes.data[11]*M_PI/180;
+   m_robot->link(HEAD_P)->q()-=0.2*m_axes.data[8]*M_PI/180;
+   m_robot->link(HEAD_P)->q()+=0.2*m_axes.data[10]*M_PI/180;
+   m_robot->link(HEAD_Y)->q()-=0.2*m_axes.data[9]*M_PI/180;
+   m_robot->link(HEAD_Y)->q()+=0.2*m_axes.data[11]*M_PI/180;
    //light
    if(buttom_accept){
      if(m_axes.data[16]>=0.1){//^ buttom
@@ -238,6 +252,8 @@ RTC::ReturnCode_t sony::onExecute(RTC::UniqueId ec_id)
       flagcalczmp=1;
 
     //std::cout << "base pos = " <<  m_basePos.data.x << ", " << m_basePos.data.y << ", " <<  m_basePos.data.z << std::endl;
+    //ofs<<m_robot->link(end_link[RLEG])->p()(0)<<endl;
+    
     //////////////write///////////////
     rzmp2st();
     m_contactStatesOut.write();
@@ -513,15 +529,15 @@ void sony::walkingMotion(BodyPtr m_robot, FootType FT, Vector3 &cm_ref, Vector3 
       T.translation()=Vector3(zmpP->link_b_deque.at(0));
       if((FT==FSRFsw)||(FT==RFsw)){
 	pt_R->setOffsetPosition(T);
-	for(int i=0;i<3;i++){//right end effect
-	  //m_localEEpos.data[i]=T.translation()(i);
-	}
+	
+	//for(int i=0;i<3;i++)//right end effect
+	//m_localEEpos.data[i]=T.translation()(i);
+	
       }
       else if((FT==FSLFsw)||(FT==LFsw)){
 	pt_L->setOffsetPosition(T);
-	for(int i=0;i<3;i++){//left end effect
-	  //m_localEEpos.data[i+3]=T.translation()(i);
-	}
+	//for(int i=0;i<3;i++)//left end effect
+	//m_localEEpos.data[i+3]=T.translation()(i);
       }
       
       R_ref[swingLeg]= zmpP->swLeg_R.at(0) * zmpP->rot_pitch.at(0);
@@ -620,7 +636,8 @@ void sony::start()
   object_ref->p()= (p_Init[RLEG] +  p_Init[RLEG] )/2;
   
   //class ini
-  zmpP= new ZmpPlaner;
+  zmpP= new ZmpPlaner();
+  zmpP->setWpgParam(param);
   
   //for path planning/////////////////////////////////////////
   //ini
@@ -633,7 +650,10 @@ void sony::start()
     Position T;
     T.linear()= Eigen::MatrixXd::Identity(3,3);
     //foot cm offset
-    T.translation()=Vector3(cm_offset_x, 0.0, -0.105);
+    double ankle_height;
+    RTC::Properties& prop = getProperties();
+    coil::stringTo(ankle_height, prop["ankle_height"].c_str());
+    T.translation()=Vector3(cm_offset_x, 0.0, -ankle_height);
     pt_R->setOffsetPosition(T);
     pt_L->setOffsetPosition(T);
     pt_R->setName("pivot_R");
@@ -675,7 +695,8 @@ void sony::start()
 
   double w=sqrt(9.806/cm_ref(2));
   zmpP->setw(w);
-
+  zmpP->setZmpOffsetX(cm_offset_x);
+ 
   Vector3 rzmpInit;
   NaturalZmp(m_robot, rzmpInit, cm_offset_x, end_link);
   zmpP->setInit( rzmpInit(0) , rzmpInit(1) );//for cp init
@@ -731,39 +752,61 @@ void sony::testMove()
            0.698132,  0.122173, 0, -1.50971,  0.122173, 0, 0, 0;
   */
 
+  
   body_ref=MatrixXd::Zero(dof,1);
   for(int i=0;i<dof;i++)
     m_mc.data[i]=body_ref(i)=halfpos[i];
   
   
+  /*
+////////////////////////////////////////
+m_robot->calcForwardKinematics();
+setModelPosture(m_robot, m_mc, FT, end_link);
+RenewModel(m_robot, p_now, R_now, end_link);
+cm_ref=m_robot->calcCenterOfMass(); 
+//for expos
+for(int i=0;i<LINKNUM;i++){
+p_ref[i]=p_now[i];
+R_ref[i]=R_now[i];
+}
+R_ref[WAIST]=Eigen::MatrixXd::Identity(3,3);
+//cm_ref(0)+=0.03;
+
+cm_ref(0)=m_robot->link(end_link[RLEG])->p()(0)+0.015;
+//cm_ref(0)=m_robot->link(end_link[RLEG])->p()(0)+0.03;  // JVRC
+
+cm_ref(0)=m_robot->link(end_link[RLEG])->p()(0)+cm_offset_x;
+
+if(CalcIVK_biped(m_robot, cm_ref, p_ref, R_ref, FT, end_link)){
+cout<<"okok"<<endl;
+for(unsigned int i=0;i<dof;i++){
+m_mc.data[i]=body_ref(i)=m_robot->joint(i)->q();
+cout<<body_ref(i)<<", ";
+}
+cout<<endl;
+}
+else
+cout<<"ivk error"<<endl;
+
+  
+  
+Interplation5(body_cur,  zero,  zero, body_ref,  zero,  zero, 5, bodyDeque);
+  //Interplation3(body_cur, zero, body_ref, zero, 5, bodyDeque);
+ 
   m_robot->calcForwardKinematics();
   setModelPosture(m_robot, m_mc, FT, end_link);
   RenewModel(m_robot, p_now, R_now, end_link);
-  cm_ref=m_robot->calcCenterOfMass(); 
   //for expos
   for(int i=0;i<LINKNUM;i++){
     p_ref[i]=p_now[i];
     R_ref[i]=R_now[i];
   }
   R_ref[WAIST]=Eigen::MatrixXd::Identity(3,3);
-  //cm_ref(0)+=0.03;
-  cm_ref(0)=m_robot->link(end_link[RLEG])->p()(0)+0.015;
-  //cm_ref(0)=m_robot->link(end_link[RLEG])->p()(0)+0.03;  // JVRC
-  if(CalcIVK_biped(m_robot, cm_ref, p_ref, R_ref, FT, end_link)){
-    cout<<"okok"<<endl;
-    for(unsigned int i=0;i<dof;i++){
-      body_ref(i)=m_robot->joint(i)->q();
-      cout<<body_ref(i)<<", ";
-    }
-    cout<<endl;
-  }
-  else
-    cout<<"ivk error"<<endl;
-  
-  
-  Interplation5(body_cur,  zero,  zero, body_ref,  zero,  zero, 5, bodyDeque);
-  //Interplation3(body_cur, zero, body_ref, zero, 5, bodyDeque);
-  
+  //////////////////////////////////////////////////
+  */
+
+  Interplation5(body_cur,  zero,  zero, body_ref,  zero,  zero, 3, bodyDeque);
+
   /*
   //
   //new posture
