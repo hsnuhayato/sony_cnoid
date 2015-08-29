@@ -352,7 +352,7 @@ inline void sony::prmGenerator(bool &calczmpflag)//this is calcrzmp flag
 {
   calcRefLeg();
   //////////////usually obmit when keep walking//////////////////
-  //start to walk or not A
+  //start to walk or not
   //waiting
   if( stopflag ){
     if(walkJudge(m_robot, FT, RLEG_ref_p, LLEG_ref_p, LEG_ref_R, end_link) || step){
@@ -654,7 +654,7 @@ void sony::start()
   rotRTemp=object_ref->R();
   cout<<"startQ "<<cm_ref(2)<<endl;
   
-
+  //no good when climb stair
   double w=sqrt(9.806/cm_ref(2));
   zmpP->setw(w);
   zmpP->setZmpOffsetX(cm_offset_x);

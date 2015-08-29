@@ -30,7 +30,7 @@ class ZmpPlaner {
   Matrix3 calcWaistR( FootType FT,  BodyPtr m_robot, string *end_link);
   void atan2adjust(double &pre, double &cur);
 
-  void StopZMP(FootType FT, std::deque<vector2> &rfzmp, int count);
+  //void StopZMP(FootType FT, std::deque<vector2> &rfzmp, int count);
 
   //capture point/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_
   void PlanCP( BodyPtr m_robot, FootType FT, Vector3 *p_ref, Matrix3 *R_ref, vector2 swLegRef_p, Matrix3 object_ref_R, std::deque<vector2> &rfzmp, bool usePivot, string *end_link);
