@@ -116,8 +116,10 @@ RTC::ReturnCode_t sony::onInitialize()
 
   //wpgParam
   coil::stringTo(param.Tsup, prop["Tsup"].c_str());
+  coil::stringTo(param.Tsup_stepping, prop["Tsup_stepping"].c_str());
   coil::stringTo(param.Tdbl, prop["Tdbl"].c_str());
   coil::stringTo(param.offsetZMPy, prop["offsetZMPy"].c_str());
+  coil::stringTo(param.offsetZMPy_stepping, prop["offsetZMPy_stepping"].c_str());
   coil::stringTo(param.offsetZMPx, prop["offsetZMPx"].c_str());
   coil::stringTo(param.Zup, prop["Zup"].c_str());
   coil::stringTo(param.Tv, prop["Tv"].c_str());
@@ -372,43 +374,18 @@ inline void sony::prmGenerator(bool &calczmpflag)//this is calcrzmp flag
       calczmpflag=0;//1008 revise
     }
   }
-
-  
-  /*
-  //walking&&if stop buckup
-  else if(count==(stepLength(FT,zmpP)- 2*zmpP->TdblNum)){
-    if( (!walkJudge(m_robot, p_ref, R_ref, FT, RLEG_ref_p, LLEG_ref_p, LEG_ref_R))&& !step){
-      CommandIn=5;//stop to walk>>quick stop
-      zmpP->StopZMP(FT, rfzmp, count);
-    }
-  }
-  */
   else if(calczmpflag==1){//keep walking start from new leg
     
     if( (!walkJudge(m_robot, FT, RLEG_ref_p, LLEG_ref_p, LEG_ref_R, end_link))&& zmpP->cp_deque.empty() && !step){
-      //stopflag=1;
       CommandIn=5;
       cout<<"should stop here"<<endl;
     }
-    
     prm2Planzmp(FT, p_ref, R_ref, RLEG_ref_p, LLEG_ref_p, LEG_ref_R, rfzmp, zmpP);
     calczmpflag=0;
-
-
   }
+
 }
 
-int sony::stepLength(FootType FT, ZmpPlaner *zmpP)
-{
-  int stepLength;
-
- if((FT==FSRFsw)||(FT==FSLFsw))
-   stepLength=zmpP->step1Num;
-  else if((FT==RFsw)||(FT==LFsw))
-   stepLength=zmpP->NomalPaceNum;
-
- return stepLength;
-}
 
 
 void sony::start2walk(BodyPtr m_robot, ZmpPlaner *zmpP, bool &stopflag, Vector3 cm_ref)
@@ -493,12 +470,11 @@ void sony::prm2Planzmp(FootType FT, Vector3 *p_ref, Matrix3 *R_ref, Vector3 RLEG
     zmpP->PlanCPstop(m_robot, FT, p_ref, R_ref, swLegRef_p, LEG_ref_R, rfzmp, end_link);
   else 
     zmpP->PlanCP(m_robot, FT, p_ref, R_ref, swLegRef_p, LEG_ref_R, rfzmp, usePivot, end_link);
-  
+
   
   //zmpP->PlanZMPnew(FT, p_ref, R_ref, swLegRef_p, LEG_ref_R, rfzmp);///plan rzmp&swingLeg traje
   //toe mode
   //zmpP->PlanZMPnew_toe(FT, p_ref, R_ref, swLegRef_p, LEG_ref_R, rfzmp);///plan rzmp&swingLeg traje
-  
 }
 
 void sony::walkingMotion(BodyPtr m_robot, FootType FT, Vector3 &cm_ref, Vector3 &absZMP, Vector3 *p_Init, Vector3 *p_ref, Matrix3 *R_ref, std::deque<vector2> &rfzmp, ZmpPlaner *zmpP)

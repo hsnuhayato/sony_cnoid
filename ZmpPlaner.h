@@ -26,19 +26,8 @@ class ZmpPlaner {
   ~ZmpPlaner();
   void setInit(vector2 &Ini);
   void setInit(double &xIni, double &yIni);
-  //void PlanZMPnew(FootType FT, BodyPtr body, vector2 swLegRef_p, Matrix3 object_ref_R, std::deque<vector2> &rfzmp); 
-
-  //void PlanZMPnew(FootType FT, Vector3 *p_ref, Matrix3 *R_ref, vector2 swLegRef_p, Matrix3 object_ref_R, std::deque<vector2> &rfzmp); 
-
-  //void calcSwingLegXYONew(FootType FT, BodyPtr body,  vector2 swLegRef_p, Matrix3 object_ref_R);
-  void PlanZMPnew_toe(BodyPtr body, FootType FT, Vector3 *p_ref, Matrix3 *R_ref, vector2 swLegRef_p, Matrix3 object_ref_R, std::deque<vector2> &rfzmp);  
-  //void PlanZMPnew_toe_dynamic(BodyPtr body, FootType FT, Vector3 *p_ref, Matrix3 *R_ref, vector2 swLegRef_p, Matrix3 object_ref_R, std::deque<vector2> &rfzmp);  
-
- void calcSwingLegXYONew(FootType FT, Vector3 *p_ref, Matrix3 *R_ref, vector2 swLegRef_p, Matrix3 object_ref_R);
- void calcSwingLegXYONew_toe(BodyPtr body, FootType FT, Vector3 *p_ref, Matrix3 *R_ref, vector2 swLegRef_p, Matrix3 object_ref_R);
-
- //void calcWaistR( FootType FT,  Matrix3 *R_ref);
- Matrix3 calcWaistR( FootType FT,  BodyPtr m_robot, string *end_link);
+  //void calcWaistR( FootType FT,  Matrix3 *R_ref);
+  Matrix3 calcWaistR( FootType FT,  BodyPtr m_robot, string *end_link);
   void atan2adjust(double &pre, double &cur);
 
   void StopZMP(FootType FT, std::deque<vector2> &rfzmp, int count);
@@ -56,20 +45,6 @@ class ZmpPlaner {
   void getNextCom(Vector3 &cm_ref);
   void setWpgParam(wpgParam param);
 
-
-  //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_
-  /*
-    void ShiftZMP(FootType FT,double *prm, double *prmPre, BodyPtr body, std::deque<vector2> &rfzmp, int count, Vector3 cm, PreviewControl *PCOri, Vector3* p_Init);
-    void gaitChange(FootType FT,double *prm, double *prmPre, int count, BodyPtr body,Vector3* p_Init);
-
-  //pc
-  void setPreviewControl(double z);
-  bool calZmpErr(PreviewControl *PCIn, std::deque<vector2> &rfzmp,int tem, vector2 &offset);
-  */
-
-  int step1Num;
-  int NomalPaceNum;
-
   std::deque<Vector3> swingLegTraj;//x y theta
   std::deque<vector2> swLegxy;
   std::deque<double> Trajzd;
@@ -83,10 +58,13 @@ class ZmpPlaner {
 
   double offsetZMPx;
   double offsetZMPy;
+  double offsetZMPy_stepping;
   bool stopOper;
-  int TsupNum,TdblNum;
+ 
   int beforeUpNum;
   double Tsup;
+  double Tsup_in;
+  double Tsup_stepping_in;
   double Tdbl;
   double Tdbl_in;
   double ankle_height;

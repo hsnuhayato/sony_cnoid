@@ -51,9 +51,11 @@ enum StepDir {front,back};
 struct wpgParam
 {
   double Tsup;
+  double Tsup_stepping;
   double Tdbl;
   double dt;
   double offsetZMPy;
+  double offsetZMPy_stepping;
   double offsetZMPx;
   double Zup;
   double Tv;

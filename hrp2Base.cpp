@@ -154,6 +154,7 @@ RTC::ReturnCode_t hrp2Base::onInitialize()
   AccelSensors = m_robot->devices();
   RateGyroSensors= m_robot->devices();
   //cout<<"forcesener localp "<<'\n'<<forceSensors[0]->p_local()<<endl;
+  //cout<<"forcesener absp "<<'\n'<<m_robot->link(end_link[RLEG])->p() + m_robot->link(end_link[RLEG])->R() * forceSensors[0]->p_local()<<endl;
   //cout<<"forcesener localR "<<'\n'<<forceSensors[0]->R_local()<<endl;
   //for(int i=0;i< (m_robot->numDevices());i++)
   cout<<"device num "<<m_robot->numDevices()<<endl;
