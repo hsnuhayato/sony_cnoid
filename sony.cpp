@@ -130,8 +130,8 @@ RTC::ReturnCode_t sony::onInitialize()
   coil::stringTo(param.ankle_height, prop["ankle_height"].c_str());
 
   usePivot=1;
-  flagOneStep=0;
-  twoSteps=0;
+  stepNum=0;
+ 
   //test paraini
   velobj=Eigen::MatrixXd::Zero(6,1);
   yawTotal=0;
@@ -535,7 +535,7 @@ void sony::ifChangeSupLeg2(BodyPtr m_robot, FootType &FT,  ZmpPlaner *zmpP, bool
 {
   if(zmpP->cp_deque.empty()){
  
-    if(flagOneStep>0){
+    if(stepNum>0){
       //cp walking. FSRFsw FSLFsw no foot swing
       if(FT==FSRFsw||FT==LFsw)
 	FT=RFsw; 
@@ -546,22 +546,21 @@ void sony::ifChangeSupLeg2(BodyPtr m_robot, FootType &FT,  ZmpPlaner *zmpP, bool
       IniNewStep(m_robot, FT, zmpP, stopflag, CommandIn, p_ref, p_Init, R_ref, R_Init);
       calczmpflag=1;
       
-      if(twoSteps){
-	if(flagOneStep==2){
-	  LLEG_ref_p[0]+=0.15;//get next abs ref pos. deque 
-	}
-      }
       
-      if(flagOneStep==1)
+      //LLEG_ref_p[0] = next abs ref pos. deque 
+
+      
+      if(stepNum==1)
 	CommandIn = 5;
 
       prm2Planzmp(FT, p_ref, R_ref, RLEG_ref_p, LLEG_ref_p, LEG_ref_R, rfzmp, zmpP);
 
 
-      flagOneStep--;
+      stepNum--;
     }
-    else if(flagOneStep==0){
+    else if(stepNum==0){
       IniNewStep(m_robot, FT, zmpP, stopflag, CommandIn, p_ref, p_Init, R_ref, R_Init);
+      stepNum--;//let above execute once
     }
    
 
@@ -696,27 +695,26 @@ void sony::stepping()
 void sony::setFootPosR()
 {
   FT=FSRFsw;
-  //calcRefLeg();
   RLEG_ref_p[0]+=0.15;
   CommandIn=0;//start to walk
   start2walk(m_robot, zmpP, stopflag, cm_ref);//stopflag off
   prm2Planzmp(FT, p_ref, R_ref, RLEG_ref_p, LLEG_ref_p, LEG_ref_R, rfzmp, zmpP);
  
-  flagOneStep=3;
-  twoSteps=1;
+  stepNum=2; //3 if two steps. number of steps + 1
+ 
 }
 
 void sony::setFootPosL()
 { 
   FT=FSLFsw;
-  //calcRefLeg();
   LLEG_ref_p[0]+=0.15;
   CommandIn=0;//start to walk
   start2walk(m_robot, zmpP, stopflag, cm_ref);//stopflag off
+  //use LEG_ref_p as cur status.
   prm2Planzmp(FT, p_ref, R_ref, RLEG_ref_p, LLEG_ref_p, LEG_ref_R, rfzmp, zmpP);
  
-  flagOneStep=2;
-  twoSteps=0;
+  stepNum=2;
+
 }
 
 

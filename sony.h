@@ -187,8 +187,8 @@ class sony  : public hrp2Base
   //for joystick
   bool buttom_accept;
 
-  int flagOneStep;
-  bool twoSteps;
+  int stepNum;
+
 };
 
 
