@@ -124,6 +124,8 @@ _CORBA_MODULE_BEG
     void testMove();
     void stepping();
     void stop();
+    void setFootPosR();
+    void setFootPosL();
 
     inline _objref_sonyService()  { _PR_setobj(0); }  // nil
     _objref_sonyService(omniIOR*, omniIdentity*);
@@ -162,6 +164,8 @@ _CORBA_MODULE_BEG
     virtual void testMove() = 0;
     virtual void stepping() = 0;
     virtual void stop() = 0;
+    virtual void setFootPosR() = 0;
+    virtual void setFootPosL() = 0;
     
   public:  // Really protected, workaround for xlC
     virtual _CORBA_Boolean _dispatch(omniCallHandle&);

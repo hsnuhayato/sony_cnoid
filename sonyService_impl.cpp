@@ -45,6 +45,17 @@ void sonyService_impl::testMove()
   m_comp->testMove();
 }
 
+void sonyService_impl::setFootPosR()
+{
+  m_comp->setFootPosR();
+}
+
+void sonyService_impl::setFootPosL()
+{
+  m_comp->setFootPosL();
+}
+
+
 void sonyService_impl::stop()
 {
   // Please insert your code here and remove the following warning pragma

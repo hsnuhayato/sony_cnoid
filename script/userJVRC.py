@@ -648,6 +648,11 @@ def testMove():
 def stepping():
     user_svc.stepping()
 
+def setFootPosR():
+    user_svc.setFootPosR()
+
+def setFootPosL():
+    user_svc.setFootPosL()
 ##st method
 #def st_hogex():
 #    st_svc.hogex()

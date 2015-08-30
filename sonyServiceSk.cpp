@@ -304,6 +304,48 @@ void OpenHRP::_objref_sonyService::stop()
 
 
 }
+// Local call call-back function.
+static void
+_0RL_lcfn_457ccd98b3f23528_70000000(omniCallDescriptor*, omniServant* svnt)
+{
+  
+  OpenHRP::_impl_sonyService* impl = (OpenHRP::_impl_sonyService*) svnt->_ptrToInterface(OpenHRP::sonyService::_PD_repoId);
+  impl->setFootPosR();
+
+
+}
+
+void OpenHRP::_objref_sonyService::setFootPosR()
+{
+  _0RL_cd_457ccd98b3f23528_00000000 _call_desc(_0RL_lcfn_457ccd98b3f23528_70000000, "setFootPosR", 12);
+
+
+  _invoke(_call_desc);
+
+
+
+}
+// Local call call-back function.
+static void
+_0RL_lcfn_457ccd98b3f23528_80000000(omniCallDescriptor*, omniServant* svnt)
+{
+  
+  OpenHRP::_impl_sonyService* impl = (OpenHRP::_impl_sonyService*) svnt->_ptrToInterface(OpenHRP::sonyService::_PD_repoId);
+  impl->setFootPosL();
+
+
+}
+
+void OpenHRP::_objref_sonyService::setFootPosL()
+{
+  _0RL_cd_457ccd98b3f23528_00000000 _call_desc(_0RL_lcfn_457ccd98b3f23528_80000000, "setFootPosL", 12);
+
+
+  _invoke(_call_desc);
+
+
+
+}
 OpenHRP::_pof_sonyService::~_pof_sonyService() {}
 
 
@@ -368,6 +410,22 @@ OpenHRP::_impl_sonyService::_dispatch(omniCallHandle& _handle)
   if( omni::strMatch(op, "stop") ) {
 
     _0RL_cd_457ccd98b3f23528_00000000 _call_desc(_0RL_lcfn_457ccd98b3f23528_60000000, "stop", 5, 1);
+    
+    _handle.upcall(this,_call_desc);
+    return 1;
+  }
+
+  if( omni::strMatch(op, "setFootPosR") ) {
+
+    _0RL_cd_457ccd98b3f23528_00000000 _call_desc(_0RL_lcfn_457ccd98b3f23528_70000000, "setFootPosR", 12, 1);
+    
+    _handle.upcall(this,_call_desc);
+    return 1;
+  }
+
+  if( omni::strMatch(op, "setFootPosL") ) {
+
+    _0RL_cd_457ccd98b3f23528_00000000 _call_desc(_0RL_lcfn_457ccd98b3f23528_80000000, "setFootPosL", 12, 1);
     
     _handle.upcall(this,_call_desc);
     return 1;

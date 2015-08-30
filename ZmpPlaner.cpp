@@ -193,7 +193,7 @@ void ZmpPlaner::PlanCP( BodyPtr m_robot, FootType FT, Vector3 *p_ref, Matrix3 *R
   //cout<<"cp "<<cp_deque.size()<<endl;
 }
 
-
+//p_ref R_ref unused
 void ZmpPlaner::PlanCPstop(BodyPtr m_robot, FootType FT, Vector3 *p_ref, Matrix3 *R_ref, vector2 swLegRef_p, Matrix3 object_ref_R, std::deque<vector2> &rfzmp, string *end_link)
 {      
   matrix22 swLegRef_R;      //yow only already okla
@@ -236,6 +236,7 @@ void ZmpPlaner::PlanCPstop(BodyPtr m_robot, FootType FT, Vector3 *p_ref, Matrix3
     double b=exp(w*Tsup);
     vector2 middle_of_foot;
     middle_of_foot=(swLegRef_p+ SupLeg_p)/2;
+   
     cZMP= (middle_of_foot - b*cp_cur)/(1-b);
     for(int i=1;i<(int)(Tsup/dt+NEAR0)+1;i++){
       cp=cZMP+ exp( w*i*dt )*(cp_cur - cZMP);
@@ -286,8 +287,6 @@ void ZmpPlaner::getNextCom(Vector3 &cm_ref)
   cm_out=cm_cur + cm_vel*dt;
   cm_ref[0]=cm_out[0];
   cm_ref[1]=cm_out[1];
-
- 
 
   //ofszmp<<cp_cur[0]<<" "<<cp_cur[1]<<" "<<cm_out[0]<<" "<<cm_out[1]<<endl;
 }

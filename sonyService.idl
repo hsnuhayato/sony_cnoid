@@ -12,5 +12,8 @@ module OpenHRP {
 		void testMove();
 		void stepping();
 		void stop();
+
+		void setFootPosR();
+		void setFootPosL();
 	};
 };
