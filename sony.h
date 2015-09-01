@@ -147,7 +147,7 @@ class sony  : public hrp2Base
 
   bool flagcalczmp;
   int CommandIn;
-  double time2Neutral;
+ 
   std::vector<double> halfpos;
   //Path planning
   Vector3 p_obj2RLEG,p_obj2LLEG;
