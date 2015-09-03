@@ -111,6 +111,9 @@ class sony  : public hrp2Base
 
   void setFootPosR();
   void setFootPosL();
+  void setFootPosR(double x, double y, double z, double r, double p, double w);
+  void setFootPosL(double x, double y, double z, double r, double p, double w);
+
  protected:
 
   // DataInPort declaration

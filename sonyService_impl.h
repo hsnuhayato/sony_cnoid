@@ -17,31 +17,33 @@
 class sony;
 
 class sonyService_impl
- : public virtual POA_OpenHRP::sonyService,
-   public virtual PortableServer::RefCountServantBase
+  : public virtual POA_OpenHRP::sonyService,
+    public virtual PortableServer::RefCountServantBase
 {
- private:
-   // Make sure all instances are built on the heap by making the
-   // destructor non-public
-   //virtual ~sonyService_impl();
+private:
+  // Make sure all instances are built on the heap by making the
+  // destructor non-public
+  //virtual ~sonyService_impl();
   sony * m_comp;
 
- public:
-   // standard constructor
-   sonyService_impl();
-   virtual ~sonyService_impl();
+public:
+  // standard constructor
+  sonyService_impl();
+  virtual ~sonyService_impl();
 
-   // attributes and operations
-   void start();
-   void setObjectV(::CORBA::Double x, ::CORBA::Double y, ::CORBA::Double z, ::CORBA::Double roll, ::CORBA::Double pitch, ::CORBA::Double yaw);
-   void testMove();
-   void stepping();
-   void stop();
+  // attributes and operations
+  void start();
+  void setObjectV(::CORBA::Double x, ::CORBA::Double y, ::CORBA::Double z, ::CORBA::Double roll, ::CORBA::Double pitch, ::CORBA::Double yaw);
+  void testMove();
+  void stepping();
+  void stop();
  
-   void setFootPosR();
-   void setFootPosL();
+  void setFootPosR();
+  void setFootPosL();
+  void setFootPosR2(double x, double y, double z, double r, double p, double w);
+  void setFootPosL2(double x, double y, double z, double r, double p, double w);
 
-   void setComponent (sony * i_comp) {
+  void setComponent (sony * i_comp) {
     m_comp = i_comp;
   }
 };

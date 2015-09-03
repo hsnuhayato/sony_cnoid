@@ -169,11 +169,14 @@ RTC::ReturnCode_t sony::onExecute(RTC::UniqueId ec_id)
   //if(!m_rhsensorIn.isNew())
   //  return RTC::RTC_OK;
 
+  /*
   //sychronize with simulator
   step_counter+=1;
   step_counter=step_counter%m_nStep;
   if(step_counter!=0)
     return RTC::RTC_OK;
+  */
+
 
   //read inport
   hrp2Base::updates();
@@ -232,7 +235,7 @@ RTC::ReturnCode_t sony::onExecute(RTC::UniqueId ec_id)
   if(playflag){
     object_operate();   
 
-    #if 1
+    #if 0
     
     prmGenerator( flagcalczmp);//stopflag off here
 
@@ -561,14 +564,14 @@ void sony::ifChangeSupLeg2(BodyPtr m_robot, FootType &FT,  ZmpPlaner *zmpP, bool
       else if(FT==FSLFsw||FT==RFsw)
 	FT=LFsw; 
 
-               
+      /*               
       if(stepNum==3){
-    RLEG_ref_p[0]+=0.35;
-    RLEG_ref_p[2]=0;
-    LLEG_ref_p[0]+=0.35;
-    LLEG_ref_p[2]=0;
-    }
-
+	RLEG_ref_p[0]+=0.35;
+	RLEG_ref_p[2]=0;
+	LLEG_ref_p[0]+=0.35;
+	LLEG_ref_p[2]=0;
+      }
+      */
 
       //change leg
       IniNewStep(m_robot, FT, zmpP, stopflag, CommandIn, p_ref, p_Init, R_ref, R_Init);
@@ -756,6 +759,51 @@ void sony::setFootPosL()
 
 }
 
+void sony::setFootPosR(double x, double y, double z, double r, double p, double w)
+{
+  RLEG_ref_p[0]=x;
+  RLEG_ref_p[1]=y;
+  RLEG_ref_p[2]=z;
+  LEG_ref_R = cnoid::rotFromRpy(r,p,w);
+  
+  if(zmpP->cp_deque.empty()){
+    FT=FSRFsw;
+    CommandIn=0;//start to walk
+    if( stopflag ){
+      std::cout << "setFootPosR : start2walk" << std::endl;
+      std::cout << "setFootPosR : stepnum = " << stepNum << std::endl;
+      start2walk(m_robot, zmpP, stopflag, cm_ref);//stopflag off
+    }
+    prm2Planzmp(FT, p_ref, R_ref, RLEG_ref_p, LLEG_ref_p, LEG_ref_R, rfzmp, zmpP);
+    stepNum = 2;
+  }  
+  else {
+    stepNum+=1;
+  }
+}
+
+void sony::setFootPosL(double x, double y, double z, double r, double p, double w)
+{
+  LLEG_ref_p[0]=x;
+  LLEG_ref_p[1]=y;
+  LLEG_ref_p[2]=z;
+  LEG_ref_R = cnoid::rotFromRpy(r,p,w);
+  
+  if(zmpP->cp_deque.empty()){
+    FT=FSLFsw;
+    CommandIn=0;//start to walk
+    if( stopflag ){
+      std::cout << "setFootPosL : start2walk" << std::endl;
+      std::cout << "setFootPosL : stepnum = " << stepNum << std::endl;
+      start2walk(m_robot, zmpP, stopflag, cm_ref);//stopflag off
+    }
+    prm2Planzmp(FT, p_ref, R_ref, RLEG_ref_p, LLEG_ref_p, LEG_ref_R, rfzmp, zmpP);
+    stepNum = 2;
+  }  
+  else {
+    stepNum+=1;
+  }
+}
 
 
 void sony::testMove()
@@ -851,7 +899,8 @@ Interplation5(body_cur,  zero,  zero, body_ref,  zero,  zero, 5, bodyDeque);
   //////////////////////////////////////////////////
   */
 
-  Interplation5(body_cur,  zero,  zero, body_ref,  zero,  zero, 3, bodyDeque);
+  //Interplation5(body_cur,  zero,  zero, body_ref,  zero,  zero, 3, bodyDeque);
+  Interplation5(body_cur,  zero,  zero, body_ref,  zero,  zero, 8, bodyDeque);
 
   /*
   //

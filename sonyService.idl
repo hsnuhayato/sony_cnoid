@@ -15,5 +15,7 @@ module OpenHRP {
 
 		void setFootPosR();
 		void setFootPosL();
+		void setFootPosR2(in double x, in double y, in double z, in double r, in double p, in double w);
+		void setFootPosL2(in double x, in double y, in double z, in double r, in double p, in double w);
 	};
 };
