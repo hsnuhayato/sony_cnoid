@@ -104,6 +104,7 @@ RTC::ReturnCode_t hrp2Base::onInitialize()
 
   cnoid::BodyLoader bl;
   m_robot=bl.load( prop["model"].c_str());
+  dof = m_robot->numJoints();
   std::cout<<"sony dof robot "<<m_robot->numJoints()<<std::endl;
 
   coil::stringTo(m_waist_height, prop["waist_height"].c_str());
@@ -121,7 +122,6 @@ RTC::ReturnCode_t hrp2Base::onInitialize()
   std::cout<<"sony centerof mass "<<cm<<endl;//m_robot->mass()
 
   mass=m_robot->mass();
-  dof = m_robot->numJoints();
 
   end_link[RLEG]=prop["RLEG_END"];
   end_link[LLEG]=prop["LLEG_END"];
