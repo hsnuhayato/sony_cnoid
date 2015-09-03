@@ -94,7 +94,12 @@ class sony  : public hrp2Base
   void start2walk(BodyPtr m_robot, ZmpPlaner *zmpP, bool &stopflag, Vector3 cm_ref);
   void prm2Planzmp(FootType FT, Vector3 *p_ref, Matrix3 *R_ref, Vector3 RLEG_ref_p, Vector3 LLEG_ref_p, Matrix3 LEG_ref_R, std::deque<vector2> &rfzmp, ZmpPlaner *zmpP);
   void walkingMotion(BodyPtr m_robot, FootType FT, Vector3 &cm_ref, Vector3 &absZMP, Vector3 *p_Init, Vector3 *p_ref, Matrix3 *R_ref, std::deque<vector2> &rfzmp,  ZmpPlaner *zmpP);  
-  bool ChangeSupLeg(BodyPtr m_robot, FootType &FT,  ZmpPlaner *zmpP, bool &stopflag, int &CommandIn, Vector3 *p_now, Vector3 *p_Init, Matrix3 *R_now, Matrix3 *R_Init);
+  
+  void ifChangeSupLeg(BodyPtr m_robot, FootType &FT,  ZmpPlaner *zmpP, bool &stopflag, int &CommandIn, Vector3 *p_now, Vector3 *p_Init, Matrix3 *R_now, Matrix3 *R_Init, bool &calczmpflag);
+  
+  void ifChangeSupLeg2(BodyPtr m_robot, FootType &FT,  ZmpPlaner *zmpP, bool &stopflag, int &CommandIn, Vector3 *p_now, Vector3 *p_Init, Matrix3 *R_now, Matrix3 *R_Init, bool &calczmpflag);
+  
+
   void IniNewStep(BodyPtr m_robot, FootType &FT, ZmpPlaner *zmpP, bool &stopflag, int &CommandIn, Vector3 *p_ref, Vector3 *p_Init, Matrix3 *R_ref, Matrix3 *R_Init);
 
   //service port
@@ -104,6 +109,8 @@ class sony  : public hrp2Base
   void setObjectV(double x, double y, double z, double roll, double pitch, double yaw);
   void stop();
 
+  void setFootPosR();
+  void setFootPosL();
  protected:
 
   // DataInPort declaration
@@ -141,7 +148,7 @@ class sony  : public hrp2Base
 
   bool flagcalczmp;
   int CommandIn;
-  double time2Neutral;
+ 
   std::vector<double> halfpos;
   //Path planning
   Vector3 p_obj2RLEG,p_obj2LLEG;
@@ -180,6 +187,9 @@ class sony  : public hrp2Base
   //Eigen::MatrixXd gh;
   //for joystick
   bool buttom_accept;
+
+  int stepNum;
+
 };
 
 

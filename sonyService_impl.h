@@ -37,8 +37,11 @@ class sonyService_impl
    void testMove();
    void stepping();
    void stop();
+ 
+   void setFootPosR();
+   void setFootPosL();
 
-  void setComponent (sony * i_comp) {
+   void setComponent (sony * i_comp) {
     m_comp = i_comp;
   }
 };

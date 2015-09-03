@@ -142,6 +142,12 @@ pnl.add(obj)
 obj = createButton("stepping", stepping)
 pnl.add(obj)
 
+obj = createButton("setFootPosR", setFootPosR)
+pnl.add(obj)
+
+obj = createButton("setFootPosL", setFootPosL)
+pnl.add(obj)
+
 obj = createButton("setObjectV", buttonEvent)
 pnl.add(obj)
 in1=JTextField("5 0 0 0 0 0",15)
