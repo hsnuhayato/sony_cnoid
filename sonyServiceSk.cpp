@@ -310,14 +310,14 @@ _0RL_lcfn_457ccd98b3f23528_70000000(omniCallDescriptor*, omniServant* svnt)
 {
   
   OpenHRP::_impl_sonyService* impl = (OpenHRP::_impl_sonyService*) svnt->_ptrToInterface(OpenHRP::sonyService::_PD_repoId);
-  impl->setFootPosR();
+  impl->setFootPosR2();
 
 
 }
 
-void OpenHRP::_objref_sonyService::setFootPosR()
+void OpenHRP::_objref_sonyService::setFootPosR2()
 {
-  _0RL_cd_457ccd98b3f23528_00000000 _call_desc(_0RL_lcfn_457ccd98b3f23528_70000000, "setFootPosR", 12);
+  _0RL_cd_457ccd98b3f23528_00000000 _call_desc(_0RL_lcfn_457ccd98b3f23528_70000000, "setFootPosR2", 13);
 
 
   _invoke(_call_desc);
@@ -331,14 +331,14 @@ _0RL_lcfn_457ccd98b3f23528_80000000(omniCallDescriptor*, omniServant* svnt)
 {
   
   OpenHRP::_impl_sonyService* impl = (OpenHRP::_impl_sonyService*) svnt->_ptrToInterface(OpenHRP::sonyService::_PD_repoId);
-  impl->setFootPosL();
+  impl->setFootPosL2();
 
 
 }
 
-void OpenHRP::_objref_sonyService::setFootPosL()
+void OpenHRP::_objref_sonyService::setFootPosL2()
 {
-  _0RL_cd_457ccd98b3f23528_00000000 _call_desc(_0RL_lcfn_457ccd98b3f23528_80000000, "setFootPosL", 12);
+  _0RL_cd_457ccd98b3f23528_00000000 _call_desc(_0RL_lcfn_457ccd98b3f23528_80000000, "setFootPosL2", 13);
 
 
   _invoke(_call_desc);
@@ -352,14 +352,14 @@ _0RL_lcfn_457ccd98b3f23528_90000000(omniCallDescriptor* cd, omniServant* svnt)
 {
   _0RL_cd_457ccd98b3f23528_20000000* tcd = (_0RL_cd_457ccd98b3f23528_20000000*)cd;
   OpenHRP::_impl_sonyService* impl = (OpenHRP::_impl_sonyService*) svnt->_ptrToInterface(OpenHRP::sonyService::_PD_repoId);
-  impl->setFootPosR2(tcd->arg_0, tcd->arg_1, tcd->arg_2, tcd->arg_3, tcd->arg_4, tcd->arg_5);
+  impl->setFootPosR(tcd->arg_0, tcd->arg_1, tcd->arg_2, tcd->arg_3, tcd->arg_4, tcd->arg_5);
 
 
 }
 
-void OpenHRP::_objref_sonyService::setFootPosR2(::CORBA::Double x, ::CORBA::Double y, ::CORBA::Double z, ::CORBA::Double r, ::CORBA::Double p, ::CORBA::Double w)
+void OpenHRP::_objref_sonyService::setFootPosR(::CORBA::Double x, ::CORBA::Double y, ::CORBA::Double z, ::CORBA::Double r, ::CORBA::Double p, ::CORBA::Double w)
 {
-  _0RL_cd_457ccd98b3f23528_20000000 _call_desc(_0RL_lcfn_457ccd98b3f23528_90000000, "setFootPosR2", 13);
+  _0RL_cd_457ccd98b3f23528_20000000 _call_desc(_0RL_lcfn_457ccd98b3f23528_90000000, "setFootPosR", 12);
   _call_desc.arg_0 = x;
   _call_desc.arg_1 = y;
   _call_desc.arg_2 = z;
@@ -378,14 +378,14 @@ _0RL_lcfn_457ccd98b3f23528_a0000000(omniCallDescriptor* cd, omniServant* svnt)
 {
   _0RL_cd_457ccd98b3f23528_20000000* tcd = (_0RL_cd_457ccd98b3f23528_20000000*)cd;
   OpenHRP::_impl_sonyService* impl = (OpenHRP::_impl_sonyService*) svnt->_ptrToInterface(OpenHRP::sonyService::_PD_repoId);
-  impl->setFootPosL2(tcd->arg_0, tcd->arg_1, tcd->arg_2, tcd->arg_3, tcd->arg_4, tcd->arg_5);
+  impl->setFootPosL(tcd->arg_0, tcd->arg_1, tcd->arg_2, tcd->arg_3, tcd->arg_4, tcd->arg_5);
 
 
 }
 
-void OpenHRP::_objref_sonyService::setFootPosL2(::CORBA::Double x, ::CORBA::Double y, ::CORBA::Double z, ::CORBA::Double r, ::CORBA::Double p, ::CORBA::Double w)
+void OpenHRP::_objref_sonyService::setFootPosL(::CORBA::Double x, ::CORBA::Double y, ::CORBA::Double z, ::CORBA::Double r, ::CORBA::Double p, ::CORBA::Double w)
 {
-  _0RL_cd_457ccd98b3f23528_20000000 _call_desc(_0RL_lcfn_457ccd98b3f23528_a0000000, "setFootPosL2", 13);
+  _0RL_cd_457ccd98b3f23528_20000000 _call_desc(_0RL_lcfn_457ccd98b3f23528_a0000000, "setFootPosL", 12);
   _call_desc.arg_0 = x;
   _call_desc.arg_1 = y;
   _call_desc.arg_2 = z;
@@ -467,25 +467,9 @@ OpenHRP::_impl_sonyService::_dispatch(omniCallHandle& _handle)
     return 1;
   }
 
-  if( omni::strMatch(op, "setFootPosR") ) {
-
-    _0RL_cd_457ccd98b3f23528_00000000 _call_desc(_0RL_lcfn_457ccd98b3f23528_70000000, "setFootPosR", 12, 1);
-    
-    _handle.upcall(this,_call_desc);
-    return 1;
-  }
-
-  if( omni::strMatch(op, "setFootPosL") ) {
-
-    _0RL_cd_457ccd98b3f23528_00000000 _call_desc(_0RL_lcfn_457ccd98b3f23528_80000000, "setFootPosL", 12, 1);
-    
-    _handle.upcall(this,_call_desc);
-    return 1;
-  }
-
   if( omni::strMatch(op, "setFootPosR2") ) {
 
-    _0RL_cd_457ccd98b3f23528_20000000 _call_desc(_0RL_lcfn_457ccd98b3f23528_90000000, "setFootPosR2", 13, 1);
+    _0RL_cd_457ccd98b3f23528_00000000 _call_desc(_0RL_lcfn_457ccd98b3f23528_70000000, "setFootPosR2", 13, 1);
     
     _handle.upcall(this,_call_desc);
     return 1;
@@ -493,7 +477,23 @@ OpenHRP::_impl_sonyService::_dispatch(omniCallHandle& _handle)
 
   if( omni::strMatch(op, "setFootPosL2") ) {
 
-    _0RL_cd_457ccd98b3f23528_20000000 _call_desc(_0RL_lcfn_457ccd98b3f23528_a0000000, "setFootPosL2", 13, 1);
+    _0RL_cd_457ccd98b3f23528_00000000 _call_desc(_0RL_lcfn_457ccd98b3f23528_80000000, "setFootPosL2", 13, 1);
+    
+    _handle.upcall(this,_call_desc);
+    return 1;
+  }
+
+  if( omni::strMatch(op, "setFootPosR") ) {
+
+    _0RL_cd_457ccd98b3f23528_20000000 _call_desc(_0RL_lcfn_457ccd98b3f23528_90000000, "setFootPosR", 12, 1);
+    
+    _handle.upcall(this,_call_desc);
+    return 1;
+  }
+
+  if( omni::strMatch(op, "setFootPosL") ) {
+
+    _0RL_cd_457ccd98b3f23528_20000000 _call_desc(_0RL_lcfn_457ccd98b3f23528_a0000000, "setFootPosL", 12, 1);
     
     _handle.upcall(this,_call_desc);
     return 1;

@@ -45,12 +45,12 @@ void sonyService_impl::testMove()
   m_comp->testMove();
 }
 
-void sonyService_impl::setFootPosR()
+void sonyService_impl::setFootPosR2()
 {
   m_comp->setFootPosR();
 }
 
-void sonyService_impl::setFootPosL()
+void sonyService_impl::setFootPosL2()
 {
   m_comp->setFootPosL();
 }
@@ -62,13 +62,13 @@ void sonyService_impl::stop()
 }
 
 
-void sonyService_impl::setFootPosR2(double x, double y, double z, double r, double p, double w)
+void sonyService_impl::setFootPosR(double x, double y, double z, double r, double p, double w)
 {
   m_comp->setFootPosR(x,y,z,r,p,w);
 }
 
 
-void sonyService_impl::setFootPosL2(double x, double y, double z, double r, double p, double w)
+void sonyService_impl::setFootPosL(double x, double y, double z, double r, double p, double w)
 {
   m_comp->setFootPosL(x,y,z,r,p,w);
 }

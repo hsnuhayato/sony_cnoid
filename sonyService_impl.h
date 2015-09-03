@@ -38,10 +38,10 @@ public:
   void stepping();
   void stop();
  
-  void setFootPosR();
-  void setFootPosL();
-  void setFootPosR2(double x, double y, double z, double r, double p, double w);
-  void setFootPosL2(double x, double y, double z, double r, double p, double w);
+  void setFootPosR2();
+  void setFootPosL2();
+  void setFootPosR(double x, double y, double z, double r, double p, double w);
+  void setFootPosL(double x, double y, double z, double r, double p, double w);
 
   void setComponent (sony * i_comp) {
     m_comp = i_comp;
