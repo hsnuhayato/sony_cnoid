@@ -39,7 +39,9 @@ hrp2Base::hrp2Base(RTC::Manager* manager)
     m_contactStatesOut("contactStates", m_contactStates),
     m_basePosOut("basePosOut", m_basePos),
     m_baseRpyOut("baseRpyOut", m_baseRpy),
-    m_refqOut("refq", m_refq)
+    m_refqOut("refq", m_refq),
+    m_basePosInitIn("basePosInit", m_basePosInit),
+    m_baseRpyInitIn("baseRpyInit", m_baseRpyInit)
     //m_hrp2BaseServicePort("hrp2BaseService")
     // </rtc-template>
 {
@@ -61,6 +63,9 @@ RTC::ReturnCode_t hrp2Base::onInitialize()
   addInPort("rfsensor", m_rfsensorIn);
   addInPort("lfsensor", m_lfsensorIn);
   addInPort("mc", m_mcIn);
+
+  addInPort("basePosInit", m_basePosInitIn);
+  addInPort("baseRpyInit", m_baseRpyInitIn);
 
   // Set OutPort buffer
   addOutPort("rzmp", m_rzmpOut);
@@ -196,6 +201,9 @@ RTC::ReturnCode_t hrp2Base::onInitialize()
 
 void hrp2Base::updates()
 {
+  if(m_mcIn.isNew()){
+    m_mcIn.read();
+  }
   /*
   if(m_mcIn.isNew()){
     m_mcIn.read();
@@ -213,6 +221,10 @@ void hrp2Base::updates()
     m_rfsensorIn.read();
   if( m_lfsensorIn.isNew() ) 
     m_lfsensorIn.read();
+
+
+  if( m_basePosInitIn.isNew() ) m_basePosInitIn.read();
+  if( m_baseRpyInitIn.isNew() ) m_baseRpyInitIn.read();
 }
 
 /*

@@ -151,6 +151,13 @@ RTC::ReturnCode_t sony::onInitialize()
   //Link* TLink=m_robot->link("LLEG_JOINT5");
   //for joystick
   buttom_accept=true;
+
+
+  Eigen::MatrixXd zero(Eigen::MatrixXd::Zero(dof,1));
+  body_cur=MatrixXd::Zero(dof,1);
+  body_ref=MatrixXd::Zero(dof,1);
+
+
   return RTC::RTC_OK;
 }
 
@@ -282,8 +289,10 @@ RTC::ReturnCode_t sony::onExecute(RTC::UniqueId ec_id)
 
   //_/_/_/_/_/_/_/_/_test/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/  
   if(!bodyDeque.empty() && !playflag){
-    for(int i=0;i<m_robot->numJoints();i++)
-      m_mc.data[i]=m_refq.data[i]=bodyDeque.at(0)(i);
+    for(int i=0;i<m_robot->numJoints();i++) {
+      //m_mc.data[i]=m_refq.data[i]=bodyDeque.at(0)(i);
+      m_refq.data[i]=bodyDeque.at(0)(i);
+    }
     bodyDeque.pop_front();
     m_refqOut.write();
   }
@@ -310,6 +319,12 @@ inline void sony::rzmp2st()
 
 inline void sony::calcWholeIVK()
 {
+  
+  // ogawa
+  if((FT==FSRFsw)||(FT==RFsw)){
+    //std::cout << p_ref[RLEG].format(Eigen::IOFormat(Eigen::StreamPrecision, 0, ", ", ", ", "", "", "[", "]")) << std::endl;
+  }
+  
   if(usePivot){
     if(CalcIVK_biped_toe(m_robot, cm_ref, p_ref, R_ref, FT, end_link))
       getInvResult();
@@ -622,8 +637,10 @@ void sony::start()
   m_mcIn.read();
   //for(unsigned int i=0;i<m_mc.data.length();i++)
   //m_refq.data[i]=body_cur(i)=m_mc.data[i];
-  for(int i=0;i<dof;i++)
-    m_refq.data[i]=body_cur(i)=halfpos[i];
+  for(int i=0;i<dof;i++) {
+    //m_refq.data[i]=body_cur(i)=halfpos[i];
+    m_refq.data[i]=body_cur(i)=m_mc.data[i];
+  }
   setModelPosture(m_robot, m_mc, FT, end_link);
   RenewModel(m_robot, p_now, R_now, end_link);
 
@@ -813,6 +830,10 @@ void sony::testMove()
   //zero=MatrixXd::Zero(dof,1);
   Eigen::MatrixXd zero(Eigen::MatrixXd::Zero(dof,1));
   body_cur=MatrixXd::Zero(dof,1);
+  m_mcIn.read();
+  for(int i=0; i<dof; i++) {
+    body_cur(i) = m_mc.data[i];
+  }
   /*
   //ver1
   body_ref<<0, 0.00332796, -0.482666, 0.859412, -0.370882, -0.00322683,
@@ -848,9 +869,10 @@ void sony::testMove()
 
   
   body_ref=MatrixXd::Zero(dof,1);
-  for(int i=0;i<dof;i++)
-    m_mc.data[i]=body_ref(i)=halfpos[i];
-  
+  for(int i=0;i<dof;i++) {
+    //m_mc.data[i]=body_ref(i)=halfpos[i];
+    body_ref(i)=halfpos[i];
+  }
   
   /*
 ////////////////////////////////////////
