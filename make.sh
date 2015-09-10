@@ -1,25 +1,32 @@
 #!/bin/sh
-. ./config.sh
-UNAME=`uname`
-#CUR_DIR=`pwd`
-#CMAKE_OPT="-DCMAKE_INSTALL_PREFIX:STRING=/opt/grx -DIDL_DIR:STRING=${CUR_DIR}$@"
-#CMAKE_OPT="-DCMAKE_INSTALL_PREFIX:STRING=/opt/grx $@"
-MAKE_OPT=VERBOSE=1 $@
+cd `dirname $0`
 
-if [ "$UNAME" = "QNX" ]; then
-  CMAKE_OPT=$CMAKE_OPT -DBOOST_ROOT=/usr/pkg
-  export CXX=QCC
-  export CC=qcc
-fi
+#
+# user configuration
+#
+export COMP_NAME="sony"
 
-cmake . ${CMAKE_OPT} | tee build.log
 
-if [ "$UNAME" = "QNX" ]; then
-  for F in `find . -name link.txt -or -name relink.txt`;
-  do 
-    sed -e "s/-export-dynamic/-Wl,-export-dynamic/g " $F > $F.new;
-    mv $F.new $F;
-  done
-fi
+#
+# not change !!
+#
+export RTM_ROOT=/usr
+export PATH=/usr/bin:$PATH
+export PKG_CONFIG_PATH=/usr/lib/pkgconfig:$PKG_CONFIG_PATH
+export LD_LIBRARY_PATH=/usr/lib:$LD_LIBRARY_PATH
 
-make ${MAKE_OPT} | tee -a build.log
+CMAKE_OPT="-DCMAKE_INSTALL_PREFIX:STRING=/usr/lib/choreonoid-1.5  $@  -DCOMP_NAME=${COMP_NAME}"
+MAKE_OPT="VERBOSE=1 $@"
+
+# for logging
+DATE=`/bin/date '+%Y%m%d%H%M'`
+mkdir -p log
+
+# cmake
+cmake . ${CMAKE_OPT} 2>&1 | tee log/build_${DATE}.log
+
+# make
+make ${MAKE_OPT} 2>&1 | tee -a log/build_${DATE}.log
+
+cd log
+ln -sfv build_${DATE}.log build.log

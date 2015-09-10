@@ -121,7 +121,7 @@ def stOff():
 def createComps(hostname=socket.gethostname()):
     global ms, user, user_svc, log, rh, servo, joystick, kf, st, st_svc
     ms = rtm.findRTCmanager(hostname)
-    rh = rtm.findRTC("JVRC-1")
+    rh = rtm.findRTC("JVRC")
     if ms==None:
         print "no ms"
     else:
@@ -129,7 +129,10 @@ def createComps(hostname=socket.gethostname()):
         joystick= initRTC("GamepadRTC","joystick")
         kf= initRTC("KalmanFilter","kf")
         st= initRTC("Stabilizer","st")
+<<<<<<< HEAD
+=======
       
+>>>>>>> 5601964c5965bbc9487364a2ae24e54edfb6828d
     servo= rtm.findRTC("creekPdServo0")
 
     if servo==None:
@@ -155,8 +158,14 @@ def createComps(hostname=socket.gethostname()):
     if joystick==None:
         print "no joystick component"
 
+<<<<<<< HEAD
+    #rtcs=[rh, joystick, kf, user, st]
+    #rtcs=[rh, joystick, kf, user]
+    rtcs=[rh, user]
+=======
     rtcs=[rh, joystick, kf, user, st]
     #rtcs=[rh, joystick, kf, user]
+>>>>>>> 5601964c5965bbc9487364a2ae24e54edfb6828d
     
     return rtcs
 

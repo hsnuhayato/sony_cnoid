@@ -1,0 +1,54 @@
+*~
+log/
+script/
+
+# c++
+*.o
+*.so
+*.conf
+
+# python
+*.class
+
+# CMake
+CMakeCache.txt
+Makefile
+cmake_install.cmake
+install_manifest.txt
+CMakeFiles
+
+
+bin/
+python/
+src/
+
+# RTC
+*.hh
+*.cc
+*Comp
+
+
+# VS
+*.obj
+*.exe
+*.exp
+*.pdb
+*.dll
+*.user
+*.aps
+*.pch
+*.vspscc
+*_i.c
+*_p.c
+*.ncb
+*.suo
+*.tlb
+*.tlh
+*.bak
+*.cache
+*.ilk
+*.log
+*.zip
+*.lib
+*.sbr
+Thumbs.db

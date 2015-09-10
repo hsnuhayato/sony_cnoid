@@ -53,7 +53,7 @@ class sony  : public hrp2Base
 
   // The activated action (Active state entry action)
   // former rtc_active_entry()
-  // virtual RTC::ReturnCode_t onActivated(RTC::UniqueId ec_id);
+  virtual RTC::ReturnCode_t onActivated(RTC::UniqueId ec_id);
 
   // The deactivated action (Active state exit action)
   // former rtc_active_exit()
@@ -107,9 +107,13 @@ class sony  : public hrp2Base
   void testMove();
   void stepping();
   void setObjectV(double x, double y, double z, double roll, double pitch, double yaw);
+  void stop();
 
   void setFootPosR();
   void setFootPosL();
+  void setFootPosR(double x, double y, double z, double r, double p, double w);
+  void setFootPosL(double x, double y, double z, double r, double p, double w);
+
  protected:
 
   // DataInPort declaration
