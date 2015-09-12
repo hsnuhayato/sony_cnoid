@@ -154,12 +154,14 @@ pnl.add(obj)
 
 obj = createButton("setFootPosR", buttonEventSetFR)
 pnl.add(obj)
-inSetFR=JTextField("0.350 0.096 0 0 0 0",15)
+inSetFR=JTextField("0.28 -0.096 0.017 0 -0.178 0",15)
 pnl.add(inSetFR)
+
+#0.280,  0.096,  0.017,  0.000, -0.178, -0.000
 
 obj = createButton("setFootPosL", buttonEventSetFL)
 pnl.add(obj)
-inSetFL=JTextField("0.350 -0.096 0.029 0 -0.179 0",15)
+inSetFL=JTextField("0.28 0.096 0.017 0 -0.178 0",15)
 pnl.add(inSetFL)
 
 obj = createButton("setObjectV", buttonEvent)

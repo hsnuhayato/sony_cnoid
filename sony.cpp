@@ -125,6 +125,7 @@ RTC::ReturnCode_t sony::onInitialize()
   coil::stringTo(param.pitch_angle, prop["pitch_angle"].c_str());
   coil::stringTo(param.link_b_front, prop["link_b_front"].c_str());
   coil::stringTo(param.link_b_rear, prop["link_b_rear"].c_str());
+  coil::stringTo(param.link_b_ankle, prop["link_b_ankle"].c_str());
   coil::stringTo(param.dt, prop["wpg.dt"].c_str());
   coil::stringTo(param.ankle_height, prop["ankle_height"].c_str());
 
@@ -328,8 +329,8 @@ inline void sony::calcWholeIVK()
   if(usePivot){
     if(CalcIVK_biped_toe(m_robot, cm_ref, p_ref, R_ref, FT, end_link))
       getInvResult();
-    else
-      cerr<<"ivk err"<<endl;
+    //else
+      //cerr<<"ivk err"<<endl;
   }
   else{
     if(CalcIVK_biped(m_robot, cm_ref, p_ref, R_ref, FT, end_link))
@@ -429,15 +430,6 @@ void sony::start2walk(BodyPtr m_robot, ZmpPlaner *zmpP, bool &stopflag, Vector3 
 
 void sony::prm2Planzmp(FootType FT, Vector3 *p_ref, Matrix3 *R_ref, Vector3 RLEG_ref_p, Vector3 LLEG_ref_p, Matrix3 LEG_ref_R, std::deque<vector2> &rfzmp, ZmpPlaner *zmpP)
 {
-  /*
-  vector2  swLegRef_p;
-  if((FT==FSRFsw)||(FT==RFsw)){
-    swLegRef_p = pfromVector3(RLEG_ref_p) ;
-  }
-  else if((FT==FSLFsw)||(FT==LFsw)){
-    swLegRef_p = pfromVector3(LLEG_ref_p) ;
-  }
-  */
   Vector3  swLegRef_p;
   if((FT==FSRFsw)||(FT==RFsw)){
     swLegRef_p = RLEG_ref_p;
@@ -783,6 +775,11 @@ void sony::setFootPosR(double x, double y, double z, double r, double p, double 
   RLEG_ref_p[2]=z;
   LEG_ref_R = cnoid::rotFromRpy(r,p,w);
   
+  LLEG_ref_p[0]=x;
+  LLEG_ref_p[1]=-y;
+  LLEG_ref_p[2]=z;
+  LEG_ref_R = cnoid::rotFromRpy(r,p,w);
+
   if(zmpP->cp_deque.empty()){
     FT=FSRFsw;
     CommandIn=0;//start to walk
@@ -792,7 +789,7 @@ void sony::setFootPosR(double x, double y, double z, double r, double p, double 
       start2walk(m_robot, zmpP, stopflag, cm_ref);//stopflag off
     }
     prm2Planzmp(FT, p_ref, R_ref, RLEG_ref_p, LLEG_ref_p, LEG_ref_R, rfzmp, zmpP);
-    stepNum = 2;
+    stepNum = 3;
   }  
   else {
     stepNum+=1;

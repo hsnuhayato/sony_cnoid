@@ -121,6 +121,12 @@ class hrp2Base  : public RTC::DataFlowComponentBase
   TimedDoubleSeq m_mc;
   InPort<TimedDoubleSeq> m_mcIn;
 
+  TimedPoint3D m_basePosInit;
+  InPort<TimedPoint3D> m_basePosInitIn;
+  TimedOrientation3D m_baseRpyInit;
+  InPort<TimedOrientation3D> m_baseRpyInitIn;
+
+
   // </rtc-template>
 
   // DataOutPort declaration

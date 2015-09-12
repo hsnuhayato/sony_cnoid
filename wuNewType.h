@@ -62,6 +62,7 @@ struct wpgParam
   double pitch_angle;
   std::vector<double> link_b_front;
   std::vector<double> link_b_rear;
+  std::vector<double> link_b_ankle;
   double ankle_height;
 };
 

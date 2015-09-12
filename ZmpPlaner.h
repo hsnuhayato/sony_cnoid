@@ -55,6 +55,7 @@ class ZmpPlaner {
   std::deque<Vector3> link_b_deque;
   Vector3 link_b_front;
   Vector3 link_b_rear;
+  Vector3 link_b_ankle;
 
   double offsetZMPx;
   double offsetZMPy;
