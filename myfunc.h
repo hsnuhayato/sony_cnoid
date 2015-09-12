@@ -80,6 +80,31 @@ void Interplation3(T xs, T dxs, T xf,T dxf, double tf, std::deque<T>& input)
     }
 }
 
+
+template<class T>
+void Interplation3_zvel(T xs, T dxs, T xf,T dxf, double tf, std::deque<T>& input)
+{
+  T a0,a1,a2,a3;
+  double dt=0.005;
+  int num=(int)(tf/dt+NEAR0);//correct
+ 
+  a0=xs;
+  a1=dxs;
+  //a2=1/(2*pow(tf,2))*(-6*(xs-xf)+2*(dxs-dxf)*tf);
+  //a3=1/pow(tf,3)*(2*(xs-xf)-(dxs-dxf)*tf);
+  a2=1/pow(tf,2)*(3*(xf-xs)-(2*dxs+dxf)*tf);
+  a3=1/pow(tf,3)*(2*(xs-xf)+(dxs+dxf)*tf);
+  
+  for(int i=1;i<num+1;i++)//頭抜き
+    //for(int i=0;i<num;i++)//ビリ抜き
+    {
+      double ti=dt*i;
+      T tmp;
+      tmp=a0+a1*ti+a2*pow(ti,2)+a3*pow(ti,3);//頭抜き
+      input.push_back(tmp);
+    }
+}
+
 template<class T>
 void Interplation1(T xs,T xf,double tf, std::deque<T>& input)
 {

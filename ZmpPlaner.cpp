@@ -377,7 +377,8 @@ void ZmpPlaner::calcSwingLegCP( BodyPtr m_robot, FootType FT, Vector3 *p_ref, Ma
   Link* SwLeg;
   //Vector3 rpytemp=rpyFromRot(object_ref_R);
   //Matrix3 tar_R=rotationZ(rpytemp(2));
-  Matrix3 tar_R=extractYow(object_ref_R);
+  //Matrix3 tar_R=extractYow(object_ref_R);
+  Matrix3 tar_R=object_ref_R;
   Matrix3 swLeg_cur_R;
   //nannnnnndatooo!!!!
 
@@ -523,29 +524,28 @@ void ZmpPlaner::calcSwingLegCP( BodyPtr m_robot, FootType FT, Vector3 *p_ref, Ma
       Interplation5(swLegRef_p_v2, zero, zero, swLegRef_p_v2, zero, zero, Tv+Tp, swLegxy);
 
 
-      //z interpolation ver
-      /*
-      zs=0.0;
-      Interplation3(zs, 0.0,  zs, 0.0, Tdbl, Trajzd);
-      //Interplation3(zs, sz,  Zup, 0.0, 0.5*Tsup, Trajzd);
-      Interplation3(zs, 0.0,  Zup, 0.0, 0.5*Tsup, Trajzd);
-      Interplation3(Zup, 0.0, zs, 0.0, 0.5*Tsup, Trajzd);
-      Interplation3(zs, 0.0,  zs, 0.0, Tp, Trajzd);
-      */
-      
-      //spline.ver
-      zs=0.0;
+
       int swingLeg=swLeg(FT);
       double height=0;
       if(p_ref[swingLeg](2)>swLegRef_p(2))
-	height = p_ref[swingLeg](2);
+	height = p_ref[swingLeg](2);//cur
       else if(p_ref[swingLeg](2)<swLegRef_p(2))
-	height = swLegRef_p(2);
-
+	height = swLegRef_p(2);//tar
       Zup= height + Zup_in;
-
       //cout<<"Zup "<<Zup<<endl;
 
+      //z interpolation ver
+      zs=0.0;
+      Interplation3(p_ref[swingLeg](2), 0.0, p_ref[swingLeg](2) , 0.0, Tdbl, Trajzd);
+      //Interplation3(zs, sz,  Zup, 0.0, 0.5*Tsup, Trajzd);
+      Interplation3(p_ref[swingLeg](2), 0.0,  Zup, 0.0, 0.5*Tsup, Trajzd);
+      Interplation3(Zup, 0.0,  swLegRef_p(2), 0.0, 0.5*Tsup, Trajzd);
+      Interplation3(swLegRef_p(2), 0.0,  swLegRef_p(2), 0.0, Tp, Trajzd);
+      
+      
+      /*
+      //spline.ver
+      zs=0.0;
       Interplation3(p_ref[swingLeg](2), 0.0, p_ref[swingLeg](2) , 0.0, Tdbl, Trajzd);
       std::vector<double> X(5), Y(5);
       X[0]=0.0; X[1]=0.1*Tsup;  X[2]=0.5*Tsup;   X[3]=Tsup-0.011; X[4]= Tsup; 
@@ -558,13 +558,15 @@ void ZmpPlaner::calcSwingLegCP( BodyPtr m_robot, FootType FT, Vector3 *p_ref, Ma
   
       tk::spline s;
       s.set_points(X,Y);  
+      int Tsupnum=(int) (Tsup/dt);
+      cout<<"TsupNum "<< Tsupnum<<endl;
       for(int i=0;i<Tsup/dt;i++){
 	double temz=s((i+1)*dt);
 	Trajzd.push_back(temz);
       }
       Interplation3(swLegRef_p(2), 0.0,  swLegRef_p(2), 0.0, Tp, Trajzd);
       //cout<<"sw "<<swLegxy.size()<<endl;
-      
+      */
     }
 
     /*
