@@ -648,11 +648,16 @@ def testMove():
 def stepping():
     user_svc.stepping()
 
-def setFootPosR():
-    user_svc.setFootPosR()
+def setFootPosR(x):
+    itemlist = x.split() #import numpy 
+    numbers = [ float(item) for item in itemlist ]
+    user_svc.setFootPosR(numbers[0], numbers[1], numbers[2], numbers[3], numbers[4], numbers[5])
 
-def setFootPosL():
-    user_svc.setFootPosL()
+def setFootPosL(x):
+    itemlist = x.split() #import numpy 
+    numbers = [ float(item) for item in itemlist ]
+    user_svc.setFootPosL(numbers[0], numbers[1], numbers[2], numbers[3], numbers[4], numbers[5])
+
 ##st method
 #def st_hogex():
 #    st_svc.hogex()

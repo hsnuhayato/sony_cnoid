@@ -111,6 +111,15 @@ def buttonEvent2():
     x=in2.getText()
     setObjectV(str(x))
 
+def buttonEventSetFR():
+    x=inSetFR.getText()
+    setFootPosR(str(x))
+
+def buttonEventSetFL():
+    x=inSetFL.getText()
+    setFootPosL(str(x))
+
+
 def setRotGainEvent():
     x=inRot.getText()
     setRotGain(str(x))
@@ -143,11 +152,15 @@ pnl.add(obj)
 obj = createButton("stepping", stepping)
 pnl.add(obj)
 
-obj = createButton("setFootPosR", setFootPosR)
+obj = createButton("setFootPosR", buttonEventSetFR)
 pnl.add(obj)
+inSetFR=JTextField("0.350 0.096 0 0 0 0",15)
+pnl.add(inSetFR)
 
-obj = createButton("setFootPosL", setFootPosL)
+obj = createButton("setFootPosL", buttonEventSetFL)
 pnl.add(obj)
+inSetFL=JTextField("0.350 -0.096 0.029 0 -0.179 0",15)
+pnl.add(inSetFL)
 
 obj = createButton("setObjectV", buttonEvent)
 pnl.add(obj)
