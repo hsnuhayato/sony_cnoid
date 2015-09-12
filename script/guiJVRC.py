@@ -1,13 +1,14 @@
-#!/opt/grx/bin/hrpsyspy
-import os
+#!/home/ogawa/workspace/git/script/hrpsyspy
+import sys,os
 import time
 from java.lang import System
 from java.awt import *
 from javax.swing import *
 from javax.swing.border import BevelBorder 
 
+
 #from guiinfo import *
-from user import *
+from userJVRC import *
 import math
 
 FILENAME_ROBOTHOST='.robothost'
@@ -32,7 +33,7 @@ def reconnect():
 def setupRobot():
   if reconnect():
     init()
-    setupLogger()
+    #setupLogger()
 
 def restart():
   waitInputConfirm('!! Caution !! \n Push [OK] to restart rtcd ')
@@ -50,8 +51,9 @@ def createButton(name, func):
 
 def createFrame():
   global funcList,txt,pnl
-  funcList = [["setup rt-system", setupRobot],["restart rtcd", restart]] + funcList
-  frm = JFrame("sample GUI for "+bodyinfo.modelName, defaultCloseOperation = JFrame.EXIT_ON_CLOSE)
+  funcList = [["setup rt-system", setupRobot]] + funcList
+  frm = JFrame("sample GUI JVRC", defaultCloseOperation = JFrame.EXIT_ON_CLOSE)
+  frm = JFrame("sample GUI JVRC")
   frm.setAlwaysOnTop(True)
   pnl = frm.getContentPane()
   pnl.layout = BoxLayout(pnl, BoxLayout.Y_AXIS)
@@ -93,54 +95,109 @@ def createFrame():
       pnlCount = 0 
       pnlId += 1
   return frm
-"""  
-if __name__ == '__main__' or __name__ == 'main':
-  frm = createFrame()
-  frm.pack()
-  frm.show()
-"""
 
 frm = createFrame()
 
 ##button event
-obj=JLabel("Input")
+obj=JLabel("User Interface")
 pnl.add(obj)
 
 def buttonEvent():
-    fileName=in1.getText()
-    print "input1 is ",fileName
+    x=in1.getText()
+    setObjectV(str(x))
+
 def buttonEvent2():
-    fileName=in2.getText()
+    x=in2.getText()
+    setObjectV(str(x))
 
-def buttonEvent3():
-    x=in3.getText()
-    setV(str(x))
+def setRotGainEvent():
+    x=inRot.getText()
+    setRotGain(str(x))
 
-def buttonEventTest():
-    wuGo()
+def setPosGainEvent():
+    x=inPos.getText()
+    setPosGain(str(x))
 
+def setAttGainEvent():
+    x=inAtt.getText()
+    setAttGain(str(x))
 
+def setTimeEvent():
+    x=inTime.getText()
+    setconstTime(str(x))
 
 ##Attach
-obj = createButton("in1", buttonEvent)
+obj = createButton("testMove", testMove)
 pnl.add(obj)
-in1=JTextField("input1 here",15)
+
+obj = createButton("start", start)
+pnl.add(obj)
+
+obj = createButton("stOn", stOn)
+pnl.add(obj)
+
+obj = createButton("stStop", stOff)
+pnl.add(obj)
+
+obj = createButton("stepping", stepping)
+pnl.add(obj)
+
+obj = createButton("setFootPosR", setFootPosR)
+pnl.add(obj)
+
+obj = createButton("setFootPosL", setFootPosL)
+pnl.add(obj)
+
+obj = createButton("setObjectV", buttonEvent)
+pnl.add(obj)
+in1=JTextField("5 0 0 0 0 0",15)
 pnl.add(in1)
 
-obj = createButton("in2", buttonEvent2)
+obj = createButton("setObjectV", buttonEvent2)
 pnl.add(obj)
-in2=JTextField("motion.pos", 15);
+in2=JTextField("0 0 0 0 0 0",15)
 pnl.add(in2)
 
-obj = createButton("StepGo!", buttonEventTest)
+obj = createButton("setPosSwitch", setPosSwitch)
 pnl.add(obj)
 
-obj = createButton("setV", buttonEvent3)
-pnl.add(obj)
-in3=JTextField("1 0 0", 15);
-pnl.add(in3)
+#obj = createButton("stPara", getSTparameter)
+#pnl.add(obj)
 
+obj = createButton("setPosGain", setPosGainEvent)
+pnl.add(obj)
+inPos=JTextField("8000 0.01",15) #70000 0.1
+pnl.add(inPos)
+
+obj = createButton("setRotSwitch", setRotSwitch)
+pnl.add(obj)
+
+obj = createButton("setRotGain", setRotGainEvent)
+pnl.add(obj)
+inRot=JTextField("500 500 0.05",15)
+pnl.add(inRot)
+
+obj = createButton("setAttSwitch", setAttSwitch)
+pnl.add(obj)
+
+obj = createButton("setAttGainRollPitch", setAttGainEvent)
+pnl.add(obj)
+inAtt=JTextField("0.1 0.1 0.003 0.003",15)
+pnl.add(inAtt)
+
+#obj = createButton("setconstTimeP&A", setTimeEvent)
+#pnl.add(obj)
+#inTime=JTextField("0.1 0.1 ",15)
+#pnl.add(inTime)
+
+
+#obj = createButton("st_hogex", st_hogex)
+#pnl.add(obj)
+
+#obj = createButton("clip", clip)
+#pnl.add(obj)
 
 
 frm.pack()
 frm.show()
+

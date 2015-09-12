@@ -36,9 +36,10 @@
 //#include <Eigen/Dense>
 //user
 #include "myfunc.h"
-#include "VConvert.h"
+//#include "VConvert.h"
+#include "VectorConvert.h"
 #include "ZmpPlaner.h"
-#include "preview_control/PreviewControl.h"
+//#include "preview_control/PreviewControl.h"
 //class
 
 
@@ -120,6 +121,12 @@ class hrp2Base  : public RTC::DataFlowComponentBase
   TimedDoubleSeq m_mc;
   InPort<TimedDoubleSeq> m_mcIn;
 
+  TimedPoint3D m_basePosInit;
+  InPort<TimedPoint3D> m_basePosInitIn;
+  TimedOrientation3D m_baseRpyInit;
+  InPort<TimedOrientation3D> m_baseRpyInitIn;
+
+
   // </rtc-template>
 
   // DataOutPort declaration
@@ -156,11 +163,12 @@ class hrp2Base  : public RTC::DataFlowComponentBase
 
   // </rtc-template>
   ZmpPlaner *zmpP;
-  PreviewControl *PC;
+  //PreviewControl *PC;
   BodyPtr m_robot;
   int dof;
   double mass;
-  int armDof;
+  double m_waist_height;
+  //int armDof;
   Vector3 absZMP,relZMP;
   Vector3 cm_ref;
   std::deque<vector2> rfzmp;
@@ -168,6 +176,9 @@ class hrp2Base  : public RTC::DataFlowComponentBase
   std::vector<double> kgain;
   std::vector<double> fgain;
   FootType FT;
+  
+  string end_link[LINKNUM];
+  string HEAD_P,HEAD_Y;
 
   Vector3 p_now[LINKNUM];
   Matrix3 R_now[LINKNUM];

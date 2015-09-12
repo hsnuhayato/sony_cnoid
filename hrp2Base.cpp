@@ -39,7 +39,9 @@ hrp2Base::hrp2Base(RTC::Manager* manager)
     m_contactStatesOut("contactStates", m_contactStates),
     m_basePosOut("basePosOut", m_basePos),
     m_baseRpyOut("baseRpyOut", m_baseRpy),
-    m_refqOut("refq", m_refq)
+    m_refqOut("refq", m_refq),
+    m_basePosInitIn("basePosInit", m_basePosInit),
+    m_baseRpyInitIn("baseRpyInit", m_baseRpyInit)
     //m_hrp2BaseServicePort("hrp2BaseService")
     // </rtc-template>
 {
@@ -61,6 +63,9 @@ RTC::ReturnCode_t hrp2Base::onInitialize()
   addInPort("rfsensor", m_rfsensorIn);
   addInPort("lfsensor", m_lfsensorIn);
   addInPort("mc", m_mcIn);
+
+  addInPort("basePosInit", m_basePosInitIn);
+  addInPort("baseRpyInit", m_baseRpyInitIn);
 
   // Set OutPort buffer
   addOutPort("rzmp", m_rzmpOut);
@@ -104,8 +109,14 @@ RTC::ReturnCode_t hrp2Base::onInitialize()
 
   cnoid::BodyLoader bl;
   m_robot=bl.load( prop["model"].c_str());
+  dof = m_robot->numJoints();
   std::cout<<"sony dof robot "<<m_robot->numJoints()<<std::endl;
-  m_robot->rootLink()->p()<<0.0, 0.0, 0.705;
+
+  coil::stringTo(m_waist_height, prop["waist_height"].c_str());
+  std::cout<<"sony waist_height "<<m_waist_height<<std::endl;
+  m_robot->rootLink()->p()<<0.0, 0.0, m_waist_height;
+
+
   for(unsigned int i=0;i<dof;i++)
     m_robot->joint(i)->q()=0; 
   //m_robot->rootLink()->p()(0)=0.0;
@@ -117,25 +128,27 @@ RTC::ReturnCode_t hrp2Base::onInitialize()
 
   mass=m_robot->mass();
 
-  dof = m_robot->numJoints();
+  end_link[RLEG]=prop["RLEG_END"];
+  end_link[LLEG]=prop["LLEG_END"];
+  end_link[RARM]=prop["RARM_END"];
+  end_link[LARM]=prop["LARM_END"];
+  end_link[WAIST]=prop["BASE_LINK"];
+  HEAD_P=prop["HEAD_P"];
+  HEAD_Y=prop["HEAD_Y"];
+  std::cout<<"sony rleg end "<<m_robot->link(end_link[RLEG])->p()<<std::endl;
+  /*
   if( m_robot->numJoints()==32){
     armDof=7;
   }
   else if( m_robot->numJoints()==30){
     armDof=6;
   }  
-
-  prop["kgain"]>>kgain;
-  prop["fgain"]>>fgain;
-  
-  //body set
-  /*
-  for(unsigned int i=0;i<dof;i++)
-    m_robot->joint(i)->q()=0; 
-  m_robot->link("WAIST")->p()<<0, 0, 0.705;
-  m_robot->calcForwardKinematics();
   */
-  RenewModel(m_robot, p_now, R_now);
+  //old for preview control
+  //prop["kgain"]>>kgain;
+  //prop["fgain"]>>fgain;
+ 
+  RenewModel(m_robot, p_now, R_now, end_link);
   updateInit(p_now, p_Init, R_now, R_Init);
   m_robot->calcCenterOfMass();
 
@@ -146,6 +159,7 @@ RTC::ReturnCode_t hrp2Base::onInitialize()
   AccelSensors = m_robot->devices();
   RateGyroSensors= m_robot->devices();
   //cout<<"forcesener localp "<<'\n'<<forceSensors[0]->p_local()<<endl;
+  //cout<<"forcesener absp "<<'\n'<<m_robot->link(end_link[RLEG])->p() + m_robot->link(end_link[RLEG])->R() * forceSensors[0]->p_local()<<endl;
   //cout<<"forcesener localR "<<'\n'<<forceSensors[0]->R_local()<<endl;
   //for(int i=0;i< (m_robot->numDevices());i++)
   cout<<"device num "<<m_robot->numDevices()<<endl;
@@ -187,6 +201,9 @@ RTC::ReturnCode_t hrp2Base::onInitialize()
 
 void hrp2Base::updates()
 {
+  if(m_mcIn.isNew()){
+    m_mcIn.read();
+  }
   /*
   if(m_mcIn.isNew()){
     m_mcIn.read();
@@ -204,6 +221,10 @@ void hrp2Base::updates()
     m_rfsensorIn.read();
   if( m_lfsensorIn.isNew() ) 
     m_lfsensorIn.read();
+
+
+  if( m_basePosInitIn.isNew() ) m_basePosInitIn.read();
+  if( m_baseRpyInitIn.isNew() ) m_baseRpyInitIn.read();
 }
 
 /*

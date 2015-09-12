@@ -1,3 +1,4 @@
+#!/home/ogawa/workspace/git/script/hrpsyspy
 #!/usr/local/bin/hrpsysjy
 
 import sys,os

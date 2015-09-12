@@ -131,10 +131,12 @@ def createComps(hostname=socket.gethostname()):
         user = initRTC("sony", "wpg")
         joystick= initRTC("GamepadRTC","joystick")
         kf= initRTC("KalmanFilter","kf")
+        #kf= initRTC("creekStateEstimator","kf")
         st= initRTC("Stabilizer","st")
     #log = initRTC("DataLogger", "log")
    
     servo= rtm.findRTC("JojoPDservo0")
+    #servo= rtm.findRTC("creekPdServo0")
 
     #user = rtm.findRTC("sony0")
     #joystick= rtm.findRTC("GamepadRTC0")
@@ -158,13 +160,16 @@ def createComps(hostname=socket.gethostname()):
         print "no svc"
 
     st_svc = OpenHRP.StabilizerServiceHelper.narrow(st.service("service0"))
+    #st_svc = None
     if st_svc==None:
         print "no st svc"
 
     if joystick==None:
         print "no joystick component"
 
-    rtcs=[rh, joystick, kf, user, st]
+    #rtcs=[rh, joystick, kf, user, st]
+    rtcs=[rh, kf, user, st]
+    #rtcs=[rh, user]
     
 
     #user.start()
@@ -181,7 +186,8 @@ def connectComps():
     rtm.connectPorts(rh.port("lfsensor"), user.port("lfsensor"))
     rtm.connectPorts(rh.port("rhsensor"), user.port("rhsensor"))
     rtm.connectPorts(rh.port("lhsensor"), user.port("lhsensor"))
-    rtm.connectPorts(user.port("light"), rh.port("light"))
+    #rtm.connectPorts(user.port("light"), rh.port("light"))
+    #rtm.connectPorts(user.port("refq"),  servo.port("qRef"))
 
     if joystick!=None:
         print "connect to gamepad"
@@ -196,14 +202,15 @@ def connectComps():
         rtm.connectPorts(kf.port("rpy"), st.port("rpy"))
         rtm.connectPorts(rh.port("rfsensor"), st.port("forceR"))
         rtm.connectPorts(rh.port("lfsensor"), st.port("forceL"))
-        rtm.connectPorts(rh.port("q"), st.port("qCurrent"))
+        #rtm.connectPorts(rh.port("q"), st.port("qCurrent"))
+        rtm.connectPorts(rh.port("qCur"), st.port("qCurrent"))
         rtm.connectPorts(user.port("refq"), st.port("qRef"))
         rtm.connectPorts(user.port("rzmp"), st.port("zmpRef"))
         rtm.connectPorts(user.port("basePosOut"), st.port("basePosIn"))
         rtm.connectPorts(user.port("baseRpyOut"), st.port("baseRpyIn"))
         rtm.connectPorts(user.port("contactStates"), st.port("contactStates"))
-        rtm.connectPorts(user.port("localEEpos"), st.port("localEEpos"))
-        rtm.connectPorts(st.port("q"),  servo.port("qRefIn"))
+        #rtm.connectPorts(user.port("localEEpos"), st.port("localEEpos"))
+        rtm.connectPorts(st.port("q"),  servo.port("qRef"))
         rtm.connectPorts(st.port("q"),    user.port("mc"))
 """    
 def connectComps():
