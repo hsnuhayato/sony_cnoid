@@ -92,9 +92,11 @@ void ZmpPlaner::setInit(vector2 &Ini)
   zmpInit=Ini;
 }
 //////////////
-void ZmpPlaner::setw(double &wIn)
+void ZmpPlaner::setw(double &cm_z_in)
 {
-  w= wIn;
+  cm_z_cur = cm_z = cm_z_in;
+  w=sqrt(9.806/cm_z);
+  //w= wIn;
 }
 void ZmpPlaner::PlanCP( BodyPtr m_robot, FootType FT, Vector3 *p_ref, Matrix3 *R_ref, Vector3 swLegRef_p, Matrix3 input_ref_R, std::deque<vector2> &rfzmp, bool usePivot, string *end_link)
 {
@@ -521,16 +523,20 @@ void ZmpPlaner::calcSwingLegCP( BodyPtr m_robot, FootType FT, Vector3 *p_ref, Ma
       */
       
       //spline.ver
-      if(true) {
 	zs=0.0;
 	int swingLeg=swLeg(FT);
 	double height=0;
+	double lower=0;
 	Vector3 SwLegNow_p = SwLeg->p() + SwLeg->R() * link_b_ankle;
-
-	if( SwLegNow_p(2) >swLegRef_p(2))
-	  height = SwLegNow_p(2) ;
-	else if( SwLegNow_p(2) <swLegRef_p(2))
+	
+	if( SwLegNow_p(2) >swLegRef_p(2)){
+	  height = SwLegNow_p(2);
+	  lower = swLegRef_p(2);
+	}
+	else if( SwLegNow_p(2) <swLegRef_p(2)){
 	  height = swLegRef_p(2);
+	  lower = SwLegNow_p(2);
+	}
 
 	Zup= height + Zup_in;
 
@@ -554,47 +560,14 @@ void ZmpPlaner::calcSwingLegCP( BodyPtr m_robot, FootType FT, Vector3 *p_ref, Ma
 	}
 	Interplation3(swPivotRef_p(2), 0.0,  swPivotRef_p(2), 0.0, Tp, Trajzd);
 	//cout<<"sw "<<swLegxy.size()<<endl;
-      }
-      // ogawa
-      else {
-	zs=0.0;
-	int swingLeg=swLeg(FT);
-	double height=0;
-	if(p_ref[swingLeg](2)>swLegRef_p(2))
-	  height = p_ref[swingLeg](2);
-	else if(p_ref[swingLeg](2)<swLegRef_p(2))
-	  height = swLegRef_p(2);
 
-	Zup= height + Zup_in;
-	//cout<<"Zup "<<Zup<<endl;
+	  //cm_z
+	double cm_z_tgt = lower + cm_z;
+	Interplation3(cm_z_cur, 0.0, cm_z_cur , 0.0, Tdbl+Tv, cm_z_deque);
+	Interplation3(cm_z_cur, 0.0, cm_z_tgt , 0.0, Tsup-2*Tv, cm_z_deque);
+	Interplation3(cm_z_tgt, 0.0, cm_z_tgt , 0.0, Tv+Tp, cm_z_deque);
+	cm_z_cur = cm_z_tgt;
 
-
-	double zRef = swLegRef_p(2);
-	Vector3 link_b_f_sole(link_b_f);  link_b_f_sole[2] = 0.0;  // sole to link_b_f
-	if(usePivot){
-	  zRef += (tar_R*link_b_f_sole)[2];
-	}
-
-
-	Interplation3(p_ref[swingLeg](2), 0.0, p_ref[swingLeg](2) , 0.0, Tdbl, Trajzd);
-	std::vector<double> X(5), Y(5);
-	X[0]=0.0; X[1]=0.1*Tsup;  X[2]=0.5*Tsup;   X[3]=Tsup-0.011; X[4]= Tsup; 
-           
-	//Y[0]=0.0; Y[1]=Zup_in*0.05;  Y[2]=Zup;  
-	//Y[3]=swLegRef_p(2)+Zup_in*0.005;  Y[4]= swLegRef_p(2);   
-
-	Y[0]=p_ref[swingLeg](2); Y[1]=p_ref[swingLeg](2)+Zup_in*0.05;  Y[2]=Zup;  
-	Y[3]=zRef+Zup_in*0.005;  Y[4]= zRef;   
-  
-	tk::spline s;
-	s.set_points(X,Y);  
-	for(int i=0;i<Tsup/dt;i++){
-	  double temz=s((i+1)*dt);
-	  Trajzd.push_back(temz);
-	}
-	Interplation3(zRef, 0.0,  zRef, 0.0, Tp, Trajzd);
-	//cout<<"sw "<<swLegxy.size()<<endl;
-      }
     }
 
     //1

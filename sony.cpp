@@ -495,7 +495,8 @@ void sony::walkingMotion(BodyPtr m_robot, FootType FT, Vector3 &cm_ref, Vector3 
     R_ref[swingLeg]= zmpP->swLeg_R.at(0);
     //zmpP->calcWaistR(FT,  R_ref); 
     R_ref[WAIST]=zmpP->calcWaistR(FT, m_robot, end_link); 
-   
+    cm_ref(2) = zmpP->cm_z_deque.at(0);
+
     //cout<<  FT<<" "<< p_ref[swingLeg](2)<<endl;
     /////////toe mode////////////
     if(usePivot){
@@ -535,7 +536,9 @@ void sony::walkingMotion(BodyPtr m_robot, FootType FT, Vector3 &cm_ref, Vector3 
 
     zmpP->swLegxy.pop_front();
     zmpP->Trajzd.pop_front();
-    zmpP->swLeg_R.pop_front();   
+    zmpP->swLeg_R.pop_front();  
+    zmpP->cm_z_deque.pop_front();
+ 
   }//empty
 
  
@@ -586,7 +589,7 @@ void sony::ifChangeSupLeg2(BodyPtr m_robot, FootType &FT,  ZmpPlaner *zmpP, bool
       
       
       //LLEG_ref_p[0] = next abs ref pos. deque 
-  
+      //if(stepNum ==2) cp to center
       
       if(stepNum==1)
 	CommandIn = 5;
@@ -716,7 +719,8 @@ void sony::start()
   
   //no good when climb stair
   double w=sqrt(9.806/cm_ref(2));
-  zmpP->setw(w);
+  //zmpP->setw(w);
+  zmpP->setw(cm_ref(2));
   zmpP->setZmpOffsetX(cm_offset_x);
  
   Vector3 rzmpInit;
