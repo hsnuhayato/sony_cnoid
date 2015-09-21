@@ -645,6 +645,9 @@ def setObjectV(x):
 def testMove():
     user_svc.testMove()
 
+def sonyStop():
+    user_svc.stop()
+
 def stepping():
     user_svc.stepping()
 
