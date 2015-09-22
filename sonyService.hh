@@ -124,6 +124,7 @@ _CORBA_MODULE_BEG
     void testMove();
     void stepping();
     void stop();
+    void omniWalkSwitch();
     void setFootPosR2();
     void setFootPosL2();
     void setFootPosR(::CORBA::Double x, ::CORBA::Double y, ::CORBA::Double z, ::CORBA::Double r, ::CORBA::Double p, ::CORBA::Double w);
@@ -166,6 +167,7 @@ _CORBA_MODULE_BEG
     virtual void testMove() = 0;
     virtual void stepping() = 0;
     virtual void stop() = 0;
+    virtual void omniWalkSwitch() = 0;
     virtual void setFootPosR2() = 0;
     virtual void setFootPosL2() = 0;
     virtual void setFootPosR(::CORBA::Double x, ::CORBA::Double y, ::CORBA::Double z, ::CORBA::Double r, ::CORBA::Double p, ::CORBA::Double w) = 0;

@@ -108,6 +108,7 @@ class sony  : public hrp2Base
   void stepping();
   void setObjectV(double x, double y, double z, double roll, double pitch, double yaw);
   void stop();
+  void omniWalkSwitch();
 
   void setFootPosR();
   void setFootPosL();
@@ -193,6 +194,9 @@ class sony  : public hrp2Base
 
   int stepNum;
   int neutralTime;
+  bool initialized;
+  bool omniWalk;
+  bool stopSequence;
 };
 
 

@@ -152,6 +152,9 @@ pnl.add(obj)
 obj = createButton("sonyStop", sonyStop)
 pnl.add(obj)
 
+obj = createButton("omniWalkSwitch", omniWalkSwitch)
+pnl.add(obj)
+
 obj = createButton("stepping", stepping)
 pnl.add(obj)
 

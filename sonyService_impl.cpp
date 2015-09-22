@@ -61,6 +61,10 @@ void sonyService_impl::stop()
   m_comp->stop();
 }
 
+void sonyService_impl::omniWalkSwitch()
+{
+  m_comp->omniWalkSwitch();
+}
 
 void sonyService_impl::setFootPosR(double x, double y, double z, double r, double p, double w)
 {
