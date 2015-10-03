@@ -119,7 +119,7 @@ def stOff():
     print "no comment"   
 
 def createComps(hostname=socket.gethostname()):
-    global ms, user, user_svc, log, rh, servo, joystick, kf, st, st_svc
+    global ms, user, user_svc, log, rh, servo, joystick, kf, st, st_svc#, cv, cv_svc
     ms = rtm.findRTCmanager(hostname)
     rh = rtm.findRTC("JVRC-1")
     if ms==None:
@@ -129,7 +129,8 @@ def createComps(hostname=socket.gethostname()):
         joystick= initRTC("GamepadRTC","joystick")
         kf= initRTC("KalmanFilter","kf")
         st= initRTC("Stabilizer","st")
-      
+        #cv= initRTC("creekCameraViewer","cv")
+
     servo= rtm.findRTC("creekPdServo0")
 
     if servo==None:
@@ -155,7 +156,12 @@ def createComps(hostname=socket.gethostname()):
     if joystick==None:
         print "no joystick component"
 
+    
+    #if cv != None:
+    #    cv_svc = OpenHRP.creekCameraViewerServiceHelper.narrow(cv.service("service0"))
+    
     rtcs=[rh, joystick, kf, user, st]
+    #rtcs=[rh, joystick, kf, user, st, cv]
     #rtcs=[rh, joystick, kf, user]
     
     return rtcs
@@ -195,6 +201,12 @@ def connectComps():
         rtm.connectPorts(st.port("q"),    user.port("mc"))
     else:
         rtm.connectPorts(user.port("refq"),  servo.port("qRef"))
+
+    #if cv != None:
+    #    rtm.connectPorts(rh.port("rcamera"),    cv.port("rcamera"))
+    #    rtm.connectPorts(rh.port("lcamera"),    cv.port("lcamera"))
+    #    rtm.connectPorts(rh.port("rhcamera"),   cv.port("rhcamera"))
+    #    rtm.connectPorts(rh.port("lhcamera"),   cv.port("lhcamera"))
 
 """    
 def connectComps():

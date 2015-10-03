@@ -44,6 +44,7 @@ class ZmpPlaner {
 
   void getNextCom(Vector3 &cm_ref);
   void setWpgParam(wpgParam param);
+  void NaturalZmp(BodyPtr m_robot, Vector3 &absZMP, string *end_link);
 
   std::deque<Vector3> swingLegTraj;//x y theta
   std::deque<vector2> swLegxy;
@@ -71,6 +72,7 @@ class ZmpPlaner {
   double ankle_height;
 
   deque<double> cm_z_deque;
+  deque<double> absZMP_z_deque;
 
   //for capture point
   std::deque<vector2> cp_deque;
@@ -83,8 +85,10 @@ class ZmpPlaner {
  private:
   //new
   vector2 zmpInit;
-  vector2 offsetZMPr;
-  vector2 offsetZMPl; 
+  Vector3 offsetZMPr;
+  Vector3 offsetZMPl; 
+ 
+
   double Zup;
   double Zup_in;
   double Tv;

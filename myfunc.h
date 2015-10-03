@@ -137,6 +137,8 @@ void RenewModel(BodyPtr body,Vector3  *p_now, Matrix3 *R_now, string *end_link);
 
 void setModelPosture( BodyPtr body,  TimedDoubleSeq &m_q, FootType FT, string *end_link);
 
+void setModelPosture( BodyPtr body,  MatrixXd body_q, FootType FT, string *end_link, int dof);
+
 void getModelPosture( BodyPtr body,  TimedDoubleSeq &m_refq);
 
 Matrix3 yowRotate(double& q);
@@ -186,6 +188,9 @@ void CalJo_biped(BodyPtr body, FootType FT, Eigen::MatrixXd& out_J, string *end_
 bool CalcIVK_biped_toe(BodyPtr body, Vector3& CM_p, Vector3 *p_ref, Matrix3 *R_ref, FootType FT, string *end_link);
 void CalJo_biped_toe(BodyPtr body, FootType FT, Eigen::MatrixXd& out_J,string *end_link);
 
+//for jvrc
+bool CalcIVK4Limbs(BodyPtr body, Vector3& CM_p, Vector3 *p_ref, Matrix3 *R_ref, FootType FT, string *end_link);
+void CalJo4Limbs(BodyPtr body, FootType FT, Eigen::MatrixXd& out_J, string *end_link);
 
 //bool CalcIVK_biped_toe(BodyPtr body, Vector3& CM_p, Vector3 *p_ref, Matrix3 *R_ref, FootType FT, Vector3  *p_Init, Matrix3 *R_Init);
 //void CalJo_biped_toe(BodyPtr body, FootType FT,dmatrix& Jacobian);

@@ -12,8 +12,6 @@
 #include<fstream>
 #include<math.h>
 
-
-
 #include <cnoid/Body>
 #include<cnoid/BodyLoader>
 #include<cnoid/VRMLBodyLoader>

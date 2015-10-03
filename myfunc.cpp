@@ -146,6 +146,24 @@ void setModelPosture( BodyPtr body,  TimedDoubleSeq &m_q, FootType FT, string *e
   body->calcForwardKinematics();
 }
 
+void setModelPosture( BodyPtr body,  MatrixXd body_q, FootType FT, string *end_link, int dof)
+{
+
+  for(unsigned int i=0;i<dof;i++)
+    body->joint(i)->q() = body_q(i);
+
+  JointPathPtr Lf2Rf = getCustomJointPath(body, body->link(end_link[LLEG]),body->link(end_link[RLEG]));
+  JointPathPtr Rf2Lf = getCustomJointPath(body, body->link(end_link[RLEG]),body->link(end_link[LLEG]));
+  
+  if((FT==FSRFsw)||FT==RFsw){
+    Lf2Rf->calcForwardKinematics();
+  }
+  else if((FT==FSLFsw)||FT==LFsw){
+    Rf2Lf->calcForwardKinematics();
+  }
+  body->calcForwardKinematics();
+
+}
 
 Matrix3 rotationZ(double theta){
   Matrix3 R;
@@ -493,12 +511,13 @@ void NaturalZmp(BodyPtr body, Vector3 &absZMP, double offset_x, string *end_link
 
   pfzmp(0)=(body->link(end_link[RLEG])->p()(0) + body->link(end_link[LLEG])->p()(0))/2;
   pfzmp(1)=(body->link(end_link[RLEG])->p()(1) + body->link(end_link[LLEG])->p()(1))/2;
+  
   //pfzmp= pfzmp + (RLeg_R*zmpoffset + LLeg_R*zmpoffset)/2;
   
   pfzmp += RfromMatrix3(body->link(end_link[WAIST])->R())*zmpoffset;
   absZMP(0)=pfzmp(0);
   absZMP(1)=pfzmp(1);
-  absZMP(2)=0; 
+  absZMP(2)=(body->link(end_link[RLEG])->p()(2) + body->link(end_link[LLEG])->p()(2))/2;
 }
 
 //please use calcWaistR in zmp planner
@@ -1170,4 +1189,287 @@ bool CalcIVK_biped_toe(BodyPtr body, Vector3& CM_p, Vector3 *p_ref, Matrix3 *R_r
     }
   }
   
+}
+
+
+//////////////for jvrc///////////////////////
+bool CalcIVK4Limbs(BodyPtr body, Vector3& CM_p, Vector3 *p_ref, Matrix3 *R_ref, FootType FT, string *end_link)
+{
+  Link* SupLeg;
+  Link* SwLeg;
+  JointPathPtr SupLeg2SwLeg,SupLeg2W;
+  Vector3 cm=body->calcCenterOfMass();
+  Vector3  SwLeg_p; 
+  Matrix3 W_R,SwLeg_R; 
+  int dof = body->numJoints();
+
+  Eigen::ColPivHouseholderQR<MatrixXd> QR;
+  //careful
+  MatrixXd Jacobian=MatrixXd::Zero(24,dof);//leg only
+  int swingLegId;
+
+  if((FT==FSRFsw)||FT==RFsw){
+    SupLeg=body->link(end_link[LLEG]);
+    SwLeg=body->link(end_link[RLEG]);
+    swingLegId=0;
+  }
+  else if((FT==FSLFsw)||FT==LFsw){
+    SupLeg=body->link(end_link[RLEG]);
+    SwLeg=body->link(end_link[LLEG]);
+    swingLegId=1;
+  }
+  SupLeg2SwLeg= getCustomJointPath(body, SupLeg, SwLeg);  
+  SupLeg2W= getCustomJointPath(body, SupLeg,body->link(end_link[WAIST]));   
+
+  //new
+  Vector3 SupLeg_p_Init;
+  Matrix3 SupLeg_R_Init; 
+  SupLeg_p_Init=SupLeg->p();
+  SupLeg_R_Init=SupLeg->R();
+  
+  static const int MAX_IK_ITERATION = 50;
+  static const double LAMBDA = 0.9;
+  
+  const int n = dof;//leg only
+  
+  //Link* target = jpp->endLink();
+  
+  std::vector<double> qorg(n);
+    for(int i=0; i < dof; ++i){
+      qorg[i] = body->joint(i)->q();
+    }
+    
+    //careful
+    VectorXd dq(n);
+    VectorXd v(24);
+    double maxIKErrorSqr=1.0e-13;
+    
+    bool converged = false;
+  
+    for(int i=0; i < MAX_IK_ITERATION; i++){
+      
+      W_R=body->link(end_link[WAIST])->R();
+      SwLeg_p = SwLeg->p();
+      SwLeg_R = SwLeg->R();
+
+      Vector3 rarm_p= body->link(end_link[RARM])->p(); 
+      Matrix3 rarm_R= body->link(end_link[RARM])->R(); 
+
+      Vector3 larm_p= body->link(end_link[LARM])->p(); 
+      Matrix3 larm_R= body->link(end_link[LARM])->R(); 
+      //tag
+      CalJo4Limbs(body, FT, Jacobian, end_link);        
+      ///
+      Vector3 CM_dp=CM_p- body->calcCenterOfMass();// + body->link("LLEG_JOINT5")->p);
+      Vector3 W_omega=W_R* omegaFromRot(W_R.transpose() * R_ref[WAIST]);
+      Vector3 SW_dp =p_ref[swingLegId] - SwLeg_p;  
+      Vector3 SW_omega = SwLeg_R* omegaFromRot(SwLeg_R.transpose() * R_ref[swingLegId]);
+     
+      Vector3 RARM_dp =p_ref[RARM] - rarm_p;  
+      Vector3 RARM_omega = rarm_R* omegaFromRot(rarm_R.transpose() * R_ref[RARM]);
+
+      Vector3 LARM_dp =p_ref[LARM] - larm_p;  
+      Vector3 LARM_omega = larm_R* omegaFromRot(larm_R.transpose() * R_ref[LARM]); 
+
+      //v<< CM_dp, W_omega, SW_dp, SW_omega;
+      v.head<3>()=CM_dp;
+      v.segment<3>(3)=W_omega;
+      v.segment<3>(6)=SW_dp;
+      v.segment<3>(9)=SW_omega;
+      v.segment<3>(12)=RARM_dp;
+      v.segment<3>(15)=RARM_omega;
+      v.segment<3>(18)=LARM_dp;
+      v.segment<3>(21)=LARM_omega;
+
+      double errsqr=v.squaredNorm();
+
+      if(errsqr < maxIKErrorSqr){
+	converged = true;
+	break;
+      }
+      
+      MatrixXd JJ;
+      double dampingConstantSqr=1e-12;
+      JJ = Jacobian *  Jacobian.transpose() + dampingConstantSqr * MatrixXd::Identity(Jacobian.rows(), Jacobian.rows());
+      dq = Jacobian.transpose() * QR.compute(JJ).solve(v);
+
+
+      for(int j=0; j < n; ++j){
+	body->joint(j)->q() += LAMBDA * dq(j);
+      }
+
+      SupLeg->p()=SupLeg_p_Init;
+      SupLeg->R()=SupLeg_R_Init;
+      SupLeg2SwLeg->calcForwardKinematics();
+      body->calcForwardKinematics();
+      
+    }//for
+    
+    if(!converged){
+      
+      for(int j=0; j < n; ++j){
+	body->joint(j)->q() = qorg[j];
+      }
+ 
+      SupLeg->p()=SupLeg_p_Init;
+      SupLeg->R()=SupLeg_R_Init;
+      SupLeg2SwLeg->calcForwardKinematics();
+      body->calcForwardKinematics();
+    }
+    
+    return converged;          
+}
+
+/*
+void CalJo4Limbs(BodyPtr body, FootType FT, Eigen::MatrixXd& out_J, string *end_link)
+{ 
+  Link* SupLeg;
+  Link* SwLeg;
+  int dof = body->numJoints();
+
+  JointPathPtr  SupLeg2SwLeg,SupLeg2W;
+  JointPathPtr  SupLeg2RARM,SupLeg2LARM;
+  MatrixXd JSupLeg2SwLeg ,JSupLeg2W,Jcom;
+  MatrixXd JSupLeg2RARM, JSupLeg2LARM;
+
+  if((FT==FSRFsw)||FT==RFsw){
+    SupLeg=body->link(end_link[LLEG]);
+    SwLeg=body->link(end_link[RLEG]);
+  }
+  else if((FT==FSLFsw)||FT==LFsw){
+    SupLeg=body->link(end_link[RLEG]);
+    SwLeg=body->link(end_link[LLEG]);
+  }
+  SupLeg2SwLeg= getCustomJointPath(body, SupLeg, SwLeg);  
+  SupLeg2W= getCustomJointPath(body, SupLeg,body->link(end_link[WAIST]));   
+
+  SupLeg2RARM = getCustomJointPath(body, SupLeg, body->link(end_link[RARM]));  
+  SupLeg2LARM = getCustomJointPath(body, SupLeg, body->link(end_link[LARM])); 
+ 
+  body->calcCenterOfMass();
+  calcCMJacobian(body, SupLeg, Jcom);
+
+  SupLeg2SwLeg->calcJacobian(JSupLeg2SwLeg);
+  SupLeg2W->calcJacobian(JSupLeg2W);
+   
+  SupLeg2RARM->calcJacobian(JSupLeg2RARM);
+  SupLeg2LARM->calcJacobian(JSupLeg2LARM);
+
+  //push in
+  for(int i=0;i<3;i++){
+    for(int j=0;j<dof;j++){
+      out_J(i,j)=Jcom(i,j);
+    }
+  }
+  
+  // SupLeg2W attitute only
+  for(int i = 0; i <  SupLeg2W->numJoints(); i++) {
+    int id =  SupLeg2W->joint(i)->jointId();
+    for(int j=3;j<6;j++){
+      out_J(j,id)=JSupLeg2W(j,i);
+    }
+  }
+  
+  //SupLeg2SwLeg
+  for(int i = 0; i < SupLeg2SwLeg->numJoints(); i++) {
+    int id = SupLeg2SwLeg->joint(i)->jointId();
+    for(int j=6;j<12;j++){
+      out_J(j,id)=JSupLeg2SwLeg(j-6,i);
+    }
+  }
+  
+ //SupLeg2RARM
+  for(int i = 0; i < SupLeg2RARM->numJoints(); i++) {
+    int id = SupLeg2RARM->joint(i)->jointId();
+    for(int j=12;j<18;j++){
+      out_J(j,id)=JSupLeg2RARM(j-12,i);
+    }
+  }
+
+  //SupLeg2LARM
+  for(int i = 0; i < SupLeg2LARM->numJoints(); i++) {
+    int id = SupLeg2LARM->joint(i)->jointId();
+    for(int j=18;j<24;j++){
+      out_J(j,id)=JSupLeg2LARM(j-18,i);
+    }
+  }
+
+
+}
+*/
+
+void CalJo4Limbs(BodyPtr body, FootType FT, Eigen::MatrixXd& out_J, string *end_link)
+{ 
+  Link* SupLeg;
+  Link* SwLeg;
+  int dof = body->numJoints();
+
+  JointPathPtr  SupLeg2SwLeg,SupLeg2W;
+  JointPathPtr  Waist2RARM,Waist2LARM;
+  MatrixXd JSupLeg2SwLeg ,JSupLeg2W,Jcom;
+  MatrixXd JWaist2RARM, JWaist2LARM;
+
+  if((FT==FSRFsw)||FT==RFsw){
+    SupLeg=body->link(end_link[LLEG]);
+    SwLeg=body->link(end_link[RLEG]);
+  }
+  else if((FT==FSLFsw)||FT==LFsw){
+    SupLeg=body->link(end_link[RLEG]);
+    SwLeg=body->link(end_link[LLEG]);
+  }
+  SupLeg2SwLeg= getCustomJointPath(body, SupLeg, SwLeg);  
+  SupLeg2W= getCustomJointPath(body, SupLeg,body->link(end_link[WAIST]));   
+
+  Waist2RARM = getCustomJointPath(body, body->link("WAIST_R"), body->link(end_link[RARM]));  
+  Waist2LARM = getCustomJointPath(body, body->link("WAIST_R"), body->link(end_link[LARM])); 
+ 
+  body->calcCenterOfMass();
+  calcCMJacobian(body, SupLeg, Jcom);
+
+  SupLeg2SwLeg->calcJacobian(JSupLeg2SwLeg);
+  SupLeg2W->calcJacobian(JSupLeg2W);
+   
+  Waist2RARM->calcJacobian(JWaist2RARM);
+  Waist2LARM->calcJacobian(JWaist2LARM);
+
+  //push in
+  for(int i=0;i<3;i++){
+    for(int j=0;j<dof;j++){
+      out_J(i,j)=Jcom(i,j);
+    }
+  }
+  
+  // SupLeg2W attitute only
+  for(int i = 0; i <  SupLeg2W->numJoints(); i++) {
+    int id =  SupLeg2W->joint(i)->jointId();
+    for(int j=3;j<6;j++){
+      out_J(j,id)=JSupLeg2W(j,i);
+    }
+  }
+  
+  //SupLeg2SwLeg
+  for(int i = 0; i < SupLeg2SwLeg->numJoints(); i++) {
+    int id = SupLeg2SwLeg->joint(i)->jointId();
+    for(int j=6;j<12;j++){
+      out_J(j,id)=JSupLeg2SwLeg(j-6,i);
+    }
+  }
+  
+ //Waist2RARM
+  for(int i = 0; i < Waist2RARM->numJoints(); i++) {
+    int id = Waist2RARM->joint(i)->jointId();
+    for(int j=12;j<18;j++){
+      out_J(j,id)=JWaist2RARM(j-12,i);
+    }
+  }
+
+  //Waist2LARM
+  for(int i = 0; i < Waist2LARM->numJoints(); i++) {
+    int id = Waist2LARM->joint(i)->jointId();
+    for(int j=18;j<24;j++){
+      out_J(j,id)=JWaist2LARM(j-18,i);
+    }
+  }
+
+
 }

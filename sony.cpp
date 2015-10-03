@@ -349,14 +349,18 @@ inline void sony::zmpHandler()
 {
   //waiting
   if(stopflag){
-    NaturalZmp(m_robot, absZMP, cm_offset_x, end_link);
+    //NaturalZmp(m_robot, absZMP, cm_offset_x, end_link);
+    zmpP->NaturalZmp(m_robot, absZMP, end_link);
+
   }
   //walking
   else{
     ///rzmp To st
-    absZMP[0]=rfzmp.at(0)(0);
-    absZMP[1]=rfzmp.at(0)(1);
+    absZMP[0] = rfzmp.at(0)(0);
+    absZMP[1] = rfzmp.at(0)(1);
+    absZMP[2] = zmpP->absZMP_z_deque.at(0);
     rfzmp.pop_front();
+    zmpP->absZMP_z_deque.pop_front();
   }
 }
 
@@ -746,7 +750,9 @@ void sony::start()
   zmpP->setZmpOffsetX(cm_offset_x);
  
   Vector3 rzmpInit;
-  NaturalZmp(m_robot, rzmpInit, cm_offset_x, end_link);
+  //NaturalZmp(m_robot, rzmpInit, cm_offset_x, end_link);
+  zmpP->NaturalZmp(m_robot, rzmpInit, end_link);
+
   zmpP->setInit( rzmpInit(0) , rzmpInit(1) );//for cp init
   
   calcRefLeg();
@@ -800,6 +806,9 @@ void sony::setFootPosL()
 
 void sony::setFootPosR(double x, double y, double z, double r, double p, double w)
 {
+  if(omniWalk)
+    omniWalkSwitch();
+
   RLEG_ref_p[0]=x;
   RLEG_ref_p[1]=y;
   RLEG_ref_p[2]=z;
@@ -856,6 +865,7 @@ void sony::setFootPosL(double x, double y, double z, double r, double p, double 
 
 void sony::testMove()
 {
+  //cout<<m_robot->link(end_link[RLEG])->p()<<endl;
   cout<<"test move"<<endl;
   //vector32 zero;
   //zero=MatrixXd::Zero(dof,1);
@@ -906,6 +916,74 @@ void sony::testMove()
   }
   
   /*
+  //for new halfpos
+  setModelPosture(m_robot, body_ref, FT, end_link, dof);
+  RenewModel(m_robot, p_now, R_now, end_link);
+  cm_ref=m_robot->calcCenterOfMass(); 
+ 
+  body_ref(21) =  deg2rad(-97.2);
+  body_ref(34) =  deg2rad(-97.2);
+  setModelPosture(m_robot, body_ref, FT, end_link, dof);
+  RenewModel(m_robot, p_now, R_now, end_link);
+
+  cout<< R_now[RARM] <<'\n'<<endl;
+  cout<< R_now[LARM] <<'\n'<<endl;
+
+  R_now[RARM] = cnoid::rotFromRpy(0, deg2rad(-90),0);
+  R_now[LARM] = cnoid::rotFromRpy(0, deg2rad(-90),0);
+  */
+  /*
+  if(CalcIVK4Limbs(m_robot, cm_ref, p_now, R_now, FT, end_link)){
+    cout<<"okok"<<endl;
+    for(unsigned int i=0;i<dof;i++){
+      cout<<m_robot->joint(i)->q()<<",";
+    }
+    cout<<endl;
+  }
+  else
+    cout<<"no"<<endl;
+  */
+
+  /*
+  JointPathPtr C2RHAND;
+  C2RHAND=getCustomJointPath(m_robot, m_robot->link("WAIST_R"), m_robot->link("R_WRIST_Y"));
+  Vector3 RHAND_p= m_robot->link("R_WRIST_Y")->p();
+  Matrix3 RHAND_R= m_robot->link("R_WRIST_Y")->R();
+  //RHAND_p(0)+=0.03;
+  cout<<"jj "<<C2RHAND->numJoints()<<endl;
+
+  C2RHAND->setGoal(RHAND_p, RHAND_R);
+  if(C2RHAND->calcInverseKinematics()){
+    cout<<"inv OK"<<endl;
+  }
+  */
+  
+  JointPathPtr C2RHAND;
+  C2RHAND=getCustomJointPath(m_robot, m_robot->link("WAIST_R"), m_robot->link("R_WRIST_Y"));
+  p_now[RARM]= m_robot->link("R_WRIST_Y")->p();
+  p_now[RARM](0) += 0.03;
+  R_now[RARM]= m_robot->link("R_WRIST_Y")->R();
+  C2RHAND->setGoal(p_now[RARM], R_now[RARM]);
+  if(!C2RHAND->calcInverseKinematics()){
+    cout<<"inv err"<<endl;
+  }
+  cout<<"jj "<<C2RHAND->numJoints()<<endl;
+
+  JointPathPtr C2LHAND;
+  C2LHAND=getCustomJointPath(m_robot, m_robot->link("WAIST_R"), m_robot->link("L_WRIST_Y"));
+  p_now[LARM]= m_robot->link("L_WRIST_Y")->p();
+  R_now[LARM]= m_robot->link("L_WRIST_Y")->R();
+  C2LHAND->setGoal(p_now[LARM], R_now[LARM]);
+  if(!C2LHAND->calcInverseKinematics()){
+    cout<<"inv err"<<endl;
+  }
+  cout<<"jj "<<C2LHAND->numJoints()<<endl;
+  /*
+  Interplation5(body_cur,  zero,  zero, body_ref,  zero,  zero, 3, bodyDeque_p);
+  */
+
+
+    /*
 ////////////////////////////////////////
 m_robot->calcForwardKinematics();
 setModelPosture(m_robot, m_mc, FT, end_link);
