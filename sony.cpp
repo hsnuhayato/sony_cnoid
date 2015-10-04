@@ -429,7 +429,8 @@ inline void sony::prmGenerator(bool &calczmpflag)//this is calcrzmp flag
 void sony::start2walk(BodyPtr m_robot, ZmpPlaner *zmpP, bool &stopflag)
 {// this is for FSRF or FSLF
   Vector3 rzmpInit;
-  NaturalZmp(m_robot, rzmpInit, cm_offset_x, end_link);
+  //NaturalZmp(m_robot, rzmpInit, cm_offset_x, end_link);
+  zmpP->NaturalZmp(m_robot, rzmpInit, end_link);
   zmpP->setInit( rzmpInit(0) , rzmpInit(1) );
   
   stopflag=0;//comment out when test mode
