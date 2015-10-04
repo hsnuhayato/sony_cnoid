@@ -947,14 +947,14 @@ void sony::testMove()
 
   /*
   JointPathPtr C2RHAND;
-  C2RHAND=getCustomJointPath(m_robot, m_robot->link("WAIST_R"), m_robot->link("R_WRIST_Y"));
-  Vector3 RHAND_p= m_robot->link("R_WRIST_Y")->p();
-  Matrix3 RHAND_R= m_robot->link("R_WRIST_Y")->R();
+  C2RHAND = getCustomJointPath(m_robot, m_robot->link("WAIST_R"), m_robot->link("R_WRIST_Y"));
+  Vector3 RHAND_p =  m_robot->link("R_WRIST_Y")->p();
+  Matrix3 RHAND_R = m_robot->link("R_WRIST_Y")->R();
   //RHAND_p(0)+=0.03;
   cout<<"jj "<<C2RHAND->numJoints()<<endl;
 
-  C2RHAND->setGoal(RHAND_p, RHAND_R);
-  if(C2RHAND->calcInverseKinematics()){
+  C2RHAND -> setGoal(RHAND_p, RHAND_R);
+  if(C2RHAND -> calcInverseKinematics()){
     cout<<"inv OK"<<endl;
   }
   */
