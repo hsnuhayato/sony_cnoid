@@ -5,7 +5,7 @@ set(CMAKE_ALLOW_LOOSE_LOOP_CONSTRUCTS true)
 if (NOT CMAKE_MODULE_PATH)
   #old HDD
   #set(CMAKE_MODULE_PATH /opt/grx/share/hrpsys/cmake_modules/ CACHE STRING "set path to cmake_modules")
-  set(CMAKE_MODULE_PATH ~/src/hrpsys/trunk/cmake_modules/ CACHE STRING "set path to cmake_modules")
+  set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_BINARY_DIR}/ CACHE STRING "set path to cmake_modules")
   #set(CMAKE_MODULE_PATH ~/src/hrpsys_base/trunk/cmake_modules/ CACHE STRING "set path to cmake_modules")
   #set(CMAKE_MODULE_PATH ../..//cmake_modules/ CACHE STRING "set path to cmake_modules")
 endif (NOT CMAKE_MODULE_PATH)
@@ -17,19 +17,21 @@ endif (NOT CMAKE_MODULE_PATH)
 ##
 include(FindPkgConfig)
 include(CheckIncludeFiles)
-find_package(OpenRTM REQUIRED)
-find_package(OpenHRP REQUIRED)
+#find_package(OpenRTM REQUIRED)
+#find_package(OpenHRP REQUIRED)
 
 #find_package(OpenSceneGraph REQUIRED)
 #find_package(Choreonoid REQUIRED)
 
+pkg_check_modules(OPENRTM REQUIRED openrtm-aist)
 include_directories(${OPENRTM_INCLUDE_DIRS})
 link_directories(${OPENRTM_LIBRARY_DIRS})
-include_directories(${OPENHRP_INCLUDE_DIRS})
-link_directories(${OPENHRP_LIBRARY_DIRS})
 
-include_directories(${CHOREONOID_INCLUDE_DIRS})
-link_directories(${CHOREONOID_LIBRARY_DIRS})
+#include_directories(${OPENHRP_INCLUDE_DIRS})
+#link_directories(${OPENHRP_LIBRARY_DIRS})
+
+#include_directories(${CHOREONOID_INCLUDE_DIRS})
+#link_directories(${CHOREONOID_LIBRARY_DIRS})
 
 #include_directories(/opt/grx/include)
 include_directories(/usr/local/include)
@@ -105,8 +107,12 @@ endif()
 #  include(CPack)
 #  include(UploadPPA)
 #endif(QNXNTO)
-
-include(GenerateStubSkel)
+execute_process(
+  COMMAND $ENV{RTM_ROOT}/bin/rtm-config --rtm-idldir
+  OUTPUT_VARIABLE OPENRTM_IDL_DIR
+  RESULT_VARIABLE RESULT
+  OUTPUT_STRIP_TRAILING_WHITESPACE)
+#include(GenerateStubSkel)
 
 ####
 ## for each component
@@ -114,8 +120,9 @@ include(GenerateStubSkel)
 set(comp_name sony)
 set(comp_sources ${comp_name}.cpp)
 
-generate_stub_skel(${comp_name}Service)
+#generate_stub_skel(${comp_name}Service)
 set(comp_sources ${comp_sources} ${comp_name}Service_impl.cpp ${comp_name}ServiceSk.cpp)
+
 #generate_hrpsys_stub_skel_wrapper(SequencePlayerService)
 
 #set(comp_sources ${comp_sources} SequencePlayerServiceStub.cpp)
@@ -128,10 +135,10 @@ set(comp_sources ${comp_sources} ZmpPlaner.cpp)
 
 
 add_library(${comp_name} SHARED ${comp_sources})
-target_link_libraries(${comp_name} ${CHOREONOID_LIBRARIES} CnoidBody CnoidBodyPlugin CnoidUtil CnoidBase )
-target_link_libraries(${comp_name} ${OPENRTM_LIBRARIES} hrpModel-3.1 hrpUtil-3.1)
+target_link_libraries(${comp_name} ${CHOREONOID_LIBRARIES} CnoidBody CnoidBodyPlugin CnoidUtil CnoidBase hrpsysBaseStub pthread omniORB4 omnithread omniDynamic4 RTC coil )
+#target_link_libraries(${comp_name} ${OPENRTM_LIBRARIES} hrpModel-3.1 hrpUtil-3.1)
 
-target_link_libraries(${comp_name} lapack blas f2c m)
+#target_link_libraries(${comp_name} lapack blas f2c m)
 set_target_properties(${comp_name} PROPERTIES PREFIX "")
 
 if (NO_COMP)
@@ -139,9 +146,9 @@ if (NO_COMP)
 else()
   set(target ${comp_name} ${comp_name}Comp)
   add_executable(${comp_name}Comp ${comp_name}Comp.cpp ${comp_sources})
-  target_link_libraries(${comp_name}Comp ${OPENRTM_LIBRARIES} hrpModel-3.1 hrpUtil-3.1)
-  target_link_libraries(${comp_name}Comp ${CHOREONOID_LIBRARIES} CnoidBody CnoidBodyPlugin CnoidUtil CnoidBase )
-  target_link_libraries(${comp_name}Comp boost_filesystem)
+  #target_link_libraries(${comp_name}Comp ${OPENRTM_LIBRARIES} hrpModel-3.1 hrpUtil-3.1)
+  target_link_libraries(${comp_name}Comp ${CHOREONOID_LIBRARIES} CnoidBody CnoidBodyPlugin CnoidUtil CnoidBase  hrpsysBaseStub pthread omniORB4 omnithread omniDynamic4 RTC coil )
+  #target_link_libraries(${comp_name}Comp boost_filesystem)
   target_link_libraries(${comp_name}Comp m)
 endif()
 

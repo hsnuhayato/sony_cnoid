@@ -137,6 +137,7 @@ void ZmpPlaner::PlanCP( BodyPtr m_robot, FootType FT, Vector3 *p_ref, Matrix3 *R
   Sw_cur_p = SwLeg->p() + SwLeg->R() * offsetZMP_SwLeg;
   swLeg_cur_p=pfromVector3(Sw_cur_p);
  
+  offsetZMP_SwLeg(0) = 0;
   swLegRef_p +=  input_ref_R * offsetZMP_SwLeg;
   vector2 swLegRef_p_v2=pfromVector3(swLegRef_p);
 
