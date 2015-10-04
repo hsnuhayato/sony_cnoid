@@ -814,12 +814,12 @@ void sony::setFootPosR(double x, double y, double z, double r, double p, double 
   RLEG_ref_p[1]=y;
   RLEG_ref_p[2]=z;
   LEG_ref_R = cnoid::rotFromRpy(r,p,w);
-  
+  /*
   LLEG_ref_p[0]=x;
   LLEG_ref_p[1]=-y;
   LLEG_ref_p[2]=z;
   LEG_ref_R = cnoid::rotFromRpy(r,p,w);
-
+  */
   if(zmpP->cp_deque.empty()){
     FT=FSRFsw;
     CommandIn=0;//start to walk
@@ -829,7 +829,7 @@ void sony::setFootPosR(double x, double y, double z, double r, double p, double 
       start2walk(m_robot, zmpP, stopflag);//stopflag off
     }
     prm2Planzmp(FT, p_ref, R_ref, RLEG_ref_p, LLEG_ref_p, LEG_ref_R, rfzmp, zmpP);
-    stepNum = 3;
+    stepNum = 2;
   }  
   else {
     stepNum+=1;
