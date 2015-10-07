@@ -599,8 +599,9 @@ void ZmpPlaner::calcSwingLegCP( BodyPtr m_robot, FootType FT, Vector3 *p_ref, Ma
 	Zup= height + Zup_in;
 
 	//cout<<"Zup "<<Zup<<endl;
-
+	//1
 	Interplation3(swPivotIni_p(2), 0.0, swPivotIni_p(2) , 0.0, Tdbl, Trajzd);
+	//2
 	std::vector<double> X(5), Y(5);
 	X[0]=0.0; X[1]=0.1*Tsup;  X[2]=0.5*Tsup;   X[3]=Tsup-0.011; X[4]= Tsup; 
            
@@ -616,8 +617,20 @@ void ZmpPlaner::calcSwingLegCP( BodyPtr m_robot, FootType FT, Vector3 *p_ref, Ma
 	  double temz=s((i+1)*dt);
 	  Trajzd.push_back(temz);
 	}
+	//3
 	Interplation3(swPivotRef_p(2), 0.0,  swPivotRef_p(2), 0.0, Tp, Trajzd);
 	//cout<<"sw "<<swLegxy.size()<<endl;
+
+	//contactsstate
+	int TsupNum=  (int)((Tsup)/dt +NEAR0 );
+	int TdblNum=  (int)((Tdbl)/dt +NEAR0 );
+	int TpNum=  (int)((Tp)/dt +NEAR0 );
+	for(int i=0;i<TdblNum;i++)
+	  contactState_deque.push_back(1);
+	for(int i=0;i<TsupNum;i++)
+	  contactState_deque.push_back(0);
+	for(int i=0;i<TpNum;i++)
+	  contactState_deque.push_back(1);
 
 	  //cm_z
 	//double cm_z_tgt = lower + cm_z;

@@ -27,6 +27,8 @@ pkg_check_modules(OPENRTM REQUIRED openrtm-aist)
 include_directories(${OPENRTM_INCLUDE_DIRS})
 link_directories(${OPENRTM_LIBRARY_DIRS})
 
+#include_directories(/usr/include/coil-1.1/coil)
+
 #include_directories(${OPENHRP_INCLUDE_DIRS})
 #link_directories(${OPENHRP_LIBRARY_DIRS})
 
@@ -107,12 +109,14 @@ endif()
 #  include(CPack)
 #  include(UploadPPA)
 #endif(QNXNTO)
-execute_process(
-  COMMAND $ENV{RTM_ROOT}/bin/rtm-config --rtm-idldir
-  OUTPUT_VARIABLE OPENRTM_IDL_DIR
-  RESULT_VARIABLE RESULT
-  OUTPUT_STRIP_TRAILING_WHITESPACE)
-#include(GenerateStubSkel)
+
+
+#execute_process(
+#  COMMAND $ENV{RTM_ROOT}/bin/rtm-config --rtm-idldir
+#  OUTPUT_VARIABLE OPENRTM_IDL_DIR
+#  RESULT_VARIABLE RESULT
+#  OUTPUT_STRIP_TRAILING_WHITESPACE)
+include(GenerateStubSkel)
 
 ####
 ## for each component

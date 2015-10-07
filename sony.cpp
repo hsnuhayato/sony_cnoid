@@ -195,7 +195,7 @@ RTC::ReturnCode_t sony::onExecute(RTC::UniqueId ec_id)
     m_axesIn.read();
 
     velobj(0)=m_axes.data[1]*-13;
-    velobj(1)=m_axes.data[0]*-5;
+    velobj(1)=m_axes.data[0]*-2.5;
     velobj(5)=m_axes.data[2]*-3;
   
     //wireless
@@ -546,16 +546,19 @@ void sony::walkingMotion(BodyPtr m_robot, FootType FT, Vector3 &cm_ref, Vector3 
     ////////////////////////////
 
     //contact states ..no good if climb stair
+    /*
     if(zmpP->Trajzd.at(0)<1e-9)
       m_contactStates.data[swingLeg]=1;
     else 
       m_contactStates.data[swingLeg]=0;
+    */
+    m_contactStates.data[swingLeg]=zmpP->contactState_deque.at(0);
 
     zmpP->swLegxy.pop_front();
     zmpP->Trajzd.pop_front();
     zmpP->swLeg_R.pop_front();  
     zmpP->cm_z_deque.pop_front();
- 
+    zmpP->contactState_deque.pop_front();
   }//empty
 
  
